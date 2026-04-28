@@ -7,7 +7,10 @@
 
 static Texture *anim_texture(Player *player)
 {
-    return (player->is_moving) ? &player->texture_walk : &player->texture_idle;
+    if (player->is_moving && player->is_running) return &player->texture_run;
+    if (player->is_moving) return &player->texture_walk;
+
+    return &player->texture_idle;
 }
 
 static int anim_rows(Player *player)
@@ -17,21 +20,18 @@ static int anim_rows(Player *player)
 
 static int anim_cols(Player *player)
 {
-    return (player->is_moving) ? 10 : 6;
+    if (player->is_moving && player->is_running) return 10;
+    if (player->is_moving) return 10;
+
+    return 6;
 }
 
 void player_init(Player *player)
 {
-    if (!texture_load("assets/Gangsters_1/Idle.png", &player->texture_idle))
-        return;
-
-    if (!texture_load("assets/Gangsters_1/Walk.png", &player->texture_walk))
-        return;
-
-    if (!texture_load("assets/Gangsters_1/Run.png",  &player->texture_run))
-        return;
-
     sprite_init(&player->sprite);
+    texture_load("assets/Gangsters_1/Idle.png", &player->texture_idle);
+    texture_load("assets/Gangsters_1/Walk.png", &player->texture_walk);
+    texture_load("assets/Gangsters_1/Run.png",  &player->texture_run);
 
     player->cx = MAP_COLS / 2;
     player->cy = 0;
@@ -47,6 +47,15 @@ void player_init(Player *player)
     player->dy = 0.0f;
     player->dir = DIRECTION_E;
     player->is_moving = false;
+    player->is_running = false;
+}
+
+void player_destroy(Player *player)
+{
+    texture_destroy(&player->texture_run);
+    texture_destroy(&player->texture_walk);
+    texture_destroy(&player->texture_idle);
+    sprite_destroy(&player->sprite);
 }
 
 void player_on_pre_step_x(Player *player)
@@ -59,44 +68,30 @@ void player_on_pre_step_y(Player *player)
 
 }
 
-void player_update(Player *player, float dt, Input *input, Camera *camera, float alpha)
-{
-    bool input_moving =
-        input_key_down(input, SDL_SCANCODE_A) || input_key_down(input, SDL_SCANCODE_LEFT) ||
-        input_key_down(input, SDL_SCANCODE_D) || input_key_down(input, SDL_SCANCODE_RIGHT);
-
-    if (input_moving) {
-        player->is_moving = true;
-    } else {
-        player->is_moving = fabsf(player->dx) > 0.01f;
-    }
-
-    player->anim_timer += dt;
-    if (player->anim_timer >= PLAYER_FRAME_TIME) {
-        player->anim_timer -= PLAYER_FRAME_TIME;
-        player->anim_frame = (player->anim_frame + 1) % anim_cols(player);
-    }
-
-    player->render_xx = lerpf(player->prev_xx, player->xx, alpha);
-    player->render_yy = lerpf(player->prev_yy, player->yy, alpha);
-}
-
 void player_fixed_update(Player *player, float dt, Input *input, Camera *camera)
 {
     // Save prev physic position for interpolation
     player->prev_xx = player->xx;
     player->prev_yy = player->yy;
 
+    player->is_running =
+        input_key_down(input, SDL_SCANCODE_LSHIFT) || input_key_down(input, SDL_SCANCODE_RSHIFT);
+
+    player->is_moving =
+        input_key_down(input, SDL_SCANCODE_A) || input_key_down(input, SDL_SCANCODE_LEFT) ||
+        input_key_down(input, SDL_SCANCODE_D) || input_key_down(input, SDL_SCANCODE_RIGHT);
+
     float target_dx = 0.0f;
+    const float speed = (player->is_running) ? PLAYER_RUN_SPEED : PLAYER_MOVE_SPEED;
 
     if (input_key_down(input, SDL_SCANCODE_A) || input_key_down(input, SDL_SCANCODE_LEFT)) {
         player->dir = DIRECTION_W;
-        target_dx = -PLAYER_MOVE_SPEED;
+        target_dx = -speed;
     }
 
     if (input_key_down(input, SDL_SCANCODE_D) || input_key_down(input, SDL_SCANCODE_RIGHT)) {
         player->dir = DIRECTION_E;
-        target_dx = PLAYER_MOVE_SPEED;
+        target_dx = speed;
     }
 
     player->dx += (target_dx - player->dx) * 0.4f;
@@ -132,6 +127,21 @@ void player_fixed_update(Player *player, float dt, Input *input, Camera *camera)
 
     player->xx = (player->cx + player->xr) * TILE_RENDER_SIZE;
     player->yy = (player->cy + player->yr) * TILE_RENDER_SIZE;
+
+    if (!player->is_moving)
+        player->is_moving = fabsf(player->dx) > 0.01f;
+}
+
+void player_update(Player *player, float dt, Input *input, Camera *camera, float alpha)
+{
+    player->anim_timer += dt;
+    if (player->anim_timer >= PLAYER_FRAME_TIME) {
+        player->anim_timer -= PLAYER_FRAME_TIME;
+        player->anim_frame = (player->anim_frame + 1) % anim_cols(player);
+    }
+
+    player->render_xx = lerpf(player->prev_xx, player->xx, alpha);
+    player->render_yy = lerpf(player->prev_yy, player->yy, alpha);
 }
 
 void player_render(Player *player, Shader *shader)
@@ -167,14 +177,6 @@ void player_render(Player *player, Shader *shader)
         player->render_xx, player->render_yy,
         PLAYER_RENDER_SIZE, PLAYER_RENDER_SIZE,
         0.0f);
-}
-
-void player_destroy(Player *player)
-{
-    sprite_destroy(&player->sprite);
-    texture_destroy(&player->texture_idle);
-    texture_destroy(&player->texture_walk);
-    texture_destroy(&player->texture_run);
 }
 
 void player_set_coords(Player *player, float x, float y)

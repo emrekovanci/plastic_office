@@ -3,6 +3,32 @@
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
 
+static const char *FALLBACK_VERT_SRC =
+    "#version 330 core\n"
+    "layout(location = 0) in vec3 aPos;\n"
+    "layout(location = 1) in vec3 aColor;\n"
+    "layout(location = 2) in vec2 aTexCoord;\n"
+    "uniform mat4 model;\n"
+    "uniform mat4 view;\n"
+    "uniform mat4 projection;\n"
+    "out vec3 ourColor;\n"
+    "out vec2 TexCoord;\n"
+    "void main() {\n"
+    "    gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
+    "    ourColor = aColor;\n"
+    "    TexCoord = aTexCoord;\n"
+    "}\n";
+
+static const char *FALLBACK_FRAG_SRC =
+    "#version 330 core\n"
+    "out vec4 FragColor;\n"
+    "in vec3 ourColor;\n"
+    "in vec2 TexCoord;\n"
+    "uniform sampler2D texture1;\n"
+    "void main() {\n"
+    "    FragColor = vec4(1.0, 0.0, 1.0, 1.0);\n"
+    "}\n";
+
 static GLint loc(const Shader *s, const char *name)
 {
     return glGetUniformLocation(s->id, name);
@@ -37,10 +63,26 @@ static GLuint shader_link(GLuint vert, GLuint frag)
     if (!ok) {
         char log[512];
         glGetProgramInfoLog(prog, sizeof(log), NULL, log);
-        SDL_Log("Failed to link shader progarm: %s", log);
+        SDL_Log("Failed to link shader program: %s", log);
         return 0;
     }
     return prog;
+}
+
+static bool shader_load_fallback(Shader *s)
+{
+    GLuint vert = shader_compile(GL_VERTEX_SHADER, FALLBACK_VERT_SRC);
+    GLuint frag = shader_compile(GL_FRAGMENT_SHADER, FALLBACK_FRAG_SRC);
+    if (!vert || !frag) {
+        glDeleteShader(vert);
+        glDeleteShader(frag);
+        return false; // something so wrong...
+    }
+
+    s->id = shader_link(vert, frag);
+    glDeleteShader(vert);
+    glDeleteShader(frag);
+    return s->id != 0;
 }
 
 bool shader_load(Shader *s, const char *vert_path, const char *frag_path)
@@ -48,10 +90,10 @@ bool shader_load(Shader *s, const char *vert_path, const char *frag_path)
     char *vert_src = SDL_LoadFile(vert_path, NULL);
     char *frag_src = SDL_LoadFile(frag_path, NULL);
     if (!vert_src || !frag_src) {
-        SDL_Log("Failed to load shader files: %s", SDL_GetError());
+        SDL_Log("Failed to load shader files: %s -- using fallback shader", SDL_GetError());
         SDL_free(vert_src);
         SDL_free(frag_src);
-        return false;
+        return shader_load_fallback(s);
     }
 
     GLuint vert = shader_compile(GL_VERTEX_SHADER, vert_src);
@@ -61,20 +103,19 @@ bool shader_load(Shader *s, const char *vert_path, const char *frag_path)
     if (!vert || !frag) {
         glDeleteShader(vert);
         glDeleteShader(frag);
-        return false;
+        return shader_load_fallback(s);
     }
 
     s->id = shader_link(vert, frag);
     glDeleteShader(vert);
     glDeleteShader(frag);
 
-    return s->id != 0;
+    return (!s->id) ? shader_load_fallback(s) : true;
 }
 
 void shader_destroy(Shader *s)
 {
     glDeleteProgram(s->id);
-    s->id = 0;
 }
 
 void shader_bind(const Shader *s)

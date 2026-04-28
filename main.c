@@ -78,22 +78,28 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    if (!(app->window = SDL_CreateWindow("SSS", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL))) {
+    SDL_Window *window = SDL_CreateWindow("SSS", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+    if (!window) {
         SDL_Log("Couldn't create window: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+    app->window = window;
 
-    if (!(app->gl_context = SDL_GL_CreateContext(app->window))) {
+    SDL_GLContext gl_context = SDL_GL_CreateContext(app->window);
+    if (!gl_context) {
         SDL_Log("Failed to create gl context: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+    app->gl_context = gl_context;
 
     if (!SDL_GL_MakeCurrent(app->window, app->gl_context)) {
-        SDL_Log("Failed to set up OpenGL context into window.");
+        SDL_Log("Failed to set up OpenGL context into window: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
-    SDL_GL_SetSwapInterval(1);
+    if (!SDL_GL_SetSwapInterval(1))
+        SDL_Log("Failed to activate VSync: %s", SDL_GetError());
+    
     if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
         SDL_Log("Failed to load glad: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -112,17 +118,10 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     if (!tilemap_build(&g_map))
         return SDL_APP_FAILURE;
 
-    if (!shader_load(&g_shader, "assets/vert.glsl", "assets/frag.glsl"))
-        return SDL_APP_FAILURE;
-
-    if (!texture_load("assets/Sky.png", &g_bg_sky_tex))
-        return SDL_APP_FAILURE;
-
-    if (!texture_load("assets/Background_Layer1.png", &g_bg1_tex))
-        return SDL_APP_FAILURE;
-
-    if (!texture_load("assets/Background_Layer2.png", &g_bg2_tex))
-        return SDL_APP_FAILURE;
+    shader_load(&g_shader, "assets/vert.glsl", "assets/frag.glsl");
+    texture_load("assets/Sky.png", &g_bg_sky_tex);
+    texture_load("assets/Background_Layer1.png", &g_bg1_tex);
+    texture_load("assets/Background_Layer2.png", &g_bg2_tex);
 
     sprite_init(&g_bg_sky_spr);
     sprite_init(&g_bg2_spr);
@@ -159,9 +158,15 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
     if (event->type == SDL_EVENT_MOUSE_WHEEL) {
         g_camera.zoom_target *= (event->wheel.y > 0) ? 1.1f : 0.9f;
-        const float min_zoom = (float)g_camera.viewport_h / (MAP_ROWS * TILE_RENDER_SIZE);
+        float min_zoom = (float)g_camera.viewport_h / (MAP_ROWS * TILE_RENDER_SIZE);
+        min_zoom = roundf(min_zoom * 1000.0f) / 1000.0f;
         g_camera.zoom_target = SDL_clamp(g_camera.zoom_target, min_zoom, 2.5f);
         SDL_Log("Min zoom: %f, Camera zoom: %f", min_zoom, g_camera.zoom);
+    }
+
+    if (event->type == SDL_EVENT_WINDOW_RESIZED) {
+        sync_vp(&g_shader, &g_camera);
+        SDL_Log("Window resized: W: %d, H: %d", event->window.data1, event->window.data2);
     }
 
     return SDL_APP_CONTINUE;
@@ -172,10 +177,10 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     AppContext *app = appstate;
 
     const Uint64 current_tick = SDL_GetTicks();
-    float delta_time = (float)(current_tick - app->last_tick) / SDL_MS_PER_SECOND;
-    delta_time = SDL_min(delta_time, 0.25f);
+    float dt = (float)(current_tick - app->last_tick) / SDL_MS_PER_SECOND;
+    dt = SDL_min(dt, 0.25f);
     app->last_tick = current_tick;
-    app->accumulator += delta_time;
+    app->accumulator += dt;
 
     input_update(&g_input);
 
@@ -185,14 +190,16 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     }
 
     const float alpha = (float)(app->accumulator / FIXED_TIMESTEP);
-    player_update(&g_player, delta_time, &g_input, &g_camera, alpha);
+    player_update(&g_player, dt, &g_input, &g_camera, alpha);
 
-    g_camera.zoom = lerpf(g_camera.zoom, g_camera.zoom_target, 1.0f - expf(-10.0f * delta_time));
-    sync_vp(&g_shader, &g_camera);
-    
+    // camera zoom & movement
+    float zoom = lerpf(g_camera.zoom, g_camera.zoom_target, 1.0f - expf(-10.0f * dt));
+    zoom = roundf(zoom * 1000.0f) / 1000.0f;
+    g_camera.zoom = zoom;
     const float target_y = (g_camera.viewport_h * 0.5f) / g_camera.zoom;
-    camera_follow(&g_camera, g_player.render_xx, target_y);
+    camera_follow(&g_camera, g_player.render_xx + PLAYER_RENDER_SIZE * 0.5f, target_y);
 
+    // clear
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -205,7 +212,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
                   (float)g_bg_sky_tex.width * TILE_SCALE, (float)g_bg_sky_tex.height * TILE_SCALE,
                   0.0f);
 
-    set_parallax_view(&g_shader, &g_camera, 0.5f);
+    set_parallax_view(&g_shader, &g_camera, 0.01f);
     sprite_render(&g_bg1_spr,
                   &g_bg1_tex,
                   &g_shader,
@@ -213,7 +220,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
                   (float)g_bg1_tex.width * TILE_SCALE, (float)g_bg1_tex.height * TILE_SCALE,
                   0.0f);
 
-    set_parallax_view(&g_shader, &g_camera, 0.8f);
+    set_parallax_view(&g_shader, &g_camera, 0.2f);
     sprite_render(&g_bg2_spr,
                   &g_bg2_tex,
                   &g_shader,
@@ -221,11 +228,10 @@ SDL_AppResult SDL_AppIterate(void *appstate)
                   (float)g_bg2_tex.width * TILE_SCALE, (float)g_bg2_tex.height * TILE_SCALE,
                   0.0f);
 
+    // render foreground
     mat4 view;
     camera_view(&g_camera, view);
     shader_set_mat4(&g_shader, "view", (float*)view);
-
-    // render foreground
     tilemap_render(&g_map, &g_shader);
     player_render(&g_player, &g_shader);
 
@@ -237,16 +243,16 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     AppContext *app = appstate;
 
-    shader_destroy(&g_shader);
-    tilemap_destroy(&g_map);
-    player_destroy(&g_player);
-
     sprite_destroy(&g_bg1_spr);
     texture_destroy(&g_bg1_tex);
     sprite_destroy(&g_bg2_spr);
     texture_destroy(&g_bg2_tex);
     sprite_destroy(&g_bg_sky_spr);
     texture_destroy(&g_bg_sky_tex);
+
+    tilemap_destroy(&g_map);
+    player_destroy(&g_player);
+    shader_destroy(&g_shader);
 
     SDL_GL_DestroyContext(app->gl_context);
     SDL_DestroyWindow(app->window);

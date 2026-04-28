@@ -18,12 +18,6 @@ static const char *layer_textures[MAP_LAYERS] = {
     "assets/Decoration.png"
 };
 
-static const char *layer_backgrounds[3] = {
-    "assets/Background.png",
-    "assets/Background_Layer1.png",
-    "assets/Background_Layer2.png"
-};
-
 static bool tilemap_read(const char *path, int out[MAP_ROWS][MAP_COLS])
 {
     FILE *fp = fopen(path, "r");

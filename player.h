@@ -17,8 +17,7 @@
 
 // 0.08 x 30 => 2.4 tile/secs * TILE_RENDER_SIZE(256) => 614 px/secs
 #define PLAYER_MOVE_SPEED     0.08f
-#define PLAYER_JUMP_FORCE     0.12f
-#define PLAYER_GRAVITY        0.005f
+#define PLAYER_RUN_SPEED      0.16f
 
 typedef struct Player Player;
 struct Player {
@@ -52,6 +51,7 @@ struct Player {
 
     Direction dir;
     bool is_moving;
+    bool is_running;
 };
 
 typedef struct PlayerAABB PlayerAABB;
@@ -63,12 +63,13 @@ struct PlayerAABB {
 };
 
 void player_init(Player *player);
+void player_destroy(Player *player);
+
 void player_on_pre_step_x(Player *player);
 void player_on_pre_step_y(Player *player);
-void player_update(Player *player, float dt, Input *input, Camera *camera, float alpha);
 void player_fixed_update(Player *player, float dt, Input *input, Camera *camera);
+void player_update(Player *player, float dt, Input *input, Camera *camera, float alpha);
 void player_render(Player *player, Shader *shader);
-void player_destroy(Player *player);
 
 // initialize cx, cy and xr, yr based on xx, yy
 void player_set_coords(Player *player, float x, float y);

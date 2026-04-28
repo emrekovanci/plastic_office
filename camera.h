@@ -21,6 +21,5 @@ void camera_reset(Camera *camera, SDL_Window *window);
 void camera_follow(Camera *camera, float target_x, float target_y);
 void camera_view(Camera *camera, mat4 out);
 void camera_proj(Camera *camera, mat4 out);
-void camera_screen_to_world(Camera *camera, float sx, float sy, float *wx, float *wy);
 
 #endif

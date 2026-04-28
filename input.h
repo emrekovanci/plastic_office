@@ -6,12 +6,12 @@
 
 typedef struct Input Input;
 struct Input {
-    bool prev[SDL_SCANCODE_COUNT];
-    bool curr[SDL_SCANCODE_COUNT];
+    bool prev_kb[SDL_SCANCODE_COUNT];
+    bool curr_kb[SDL_SCANCODE_COUNT];
     float mouse_x;
     float mouse_y;
-    bool prev_mouse_right;
-    bool curr_mouse_right;
+    SDL_MouseButtonFlags prev_mouse;
+    SDL_MouseButtonFlags curr_mouse;
 };
 
 void input_update(Input *input);
@@ -21,11 +21,9 @@ bool input_key_up(Input *input, SDL_Scancode key);
 bool input_key_pressed(Input *input, SDL_Scancode key);
 bool input_key_released(Input *input, SDL_Scancode key);
 
-bool input_mouse_left_down(void);
-bool input_mouse_middle_down(void);
-bool input_mouse_right_down(void);
-
-bool input_mouse_right_pressed(Input *input);
-bool input_mouse_right_released(Input *input);
+bool input_mouse_down(Input *input, int btn);
+bool input_mouse_up(Input *input, int btn);
+bool input_mouse_pressed(Input *input, int btn);
+bool input_mouse_released(Input *input, int btn);
 
 #endif

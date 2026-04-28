@@ -2,6 +2,7 @@
 
 - Collision
 - Better input management & states
+- Cross Platform asset paths
 
 ### Movement Docs
 
