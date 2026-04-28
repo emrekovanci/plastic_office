@@ -9,6 +9,7 @@ void camera_reset(Camera *camera, SDL_Window *window)
     camera->x = 0.0f;
     camera->y = 0.0f;
     camera->zoom = 1.0f;
+    camera->zoom_target = 1.0f;
 }
 
 void camera_follow(Camera *camera, float target_x, float target_y)

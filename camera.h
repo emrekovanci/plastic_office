@@ -14,6 +14,7 @@ struct Camera {
     float x;
     float y;
     float zoom;
+    float zoom_target;
 };
 
 void camera_reset(Camera *camera, SDL_Window *window);

@@ -19,6 +19,11 @@ void swapf(float *x, float *y)
     *y = temp;
 }
 
+float lerpf(float a, float b, float t)
+{
+    return a + (b - a) * t;
+}
+
 int invert_y(int y)
 {
     return MAP_ROWS - 1 - y;

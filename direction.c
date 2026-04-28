@@ -54,24 +54,23 @@ int get_mouse_direction(int x1, int y1, int to_x, int to_y, int current_facing)
             return current_facing;
     }
 
-    switch (hashf)
-    {
-    case 111: return DIRECTION_W;
-    case 112: return DIRECTION_NW;
-    case 113: return DIRECTION_N;
-    case 120: return DIRECTION_W;
-    case 131: return DIRECTION_W;
-    case 132: return DIRECTION_SW;
-    case 133: return DIRECTION_S;
-    case 210: return DIRECTION_N;
-    case 230: return DIRECTION_S;
-    case 311: return DIRECTION_E;
-    case 312: return DIRECTION_NE;
-    case 313: return DIRECTION_N;
-    case 320: return DIRECTION_E;
-    case 331: return DIRECTION_E;
-    case 332: return DIRECTION_SE;
-    case 333: return DIRECTION_S;
+    switch (hashf) {
+        case 111: return DIRECTION_W;
+        case 112: return DIRECTION_NW;
+        case 113: return DIRECTION_N;
+        case 120: return DIRECTION_W;
+        case 131: return DIRECTION_W;
+        case 132: return DIRECTION_SW;
+        case 133: return DIRECTION_S;
+        case 210: return DIRECTION_N;
+        case 230: return DIRECTION_S;
+        case 311: return DIRECTION_E;
+        case 312: return DIRECTION_NE;
+        case 313: return DIRECTION_N;
+        case 320: return DIRECTION_E;
+        case 331: return DIRECTION_E;
+        case 332: return DIRECTION_SE;
+        case 333: return DIRECTION_S;
     }
 
     return current_facing;

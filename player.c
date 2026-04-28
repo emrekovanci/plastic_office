@@ -77,8 +77,8 @@ void player_update(Player *player, float dt, Input *input, Camera *camera, float
         player->anim_frame = (player->anim_frame + 1) % anim_cols(player);
     }
 
-    player->render_xx = player->prev_xx + (player->xx - player->prev_xx) * alpha;
-    player->render_yy = player->prev_yy + (player->yy - player->prev_yy) * alpha;
+    player->render_xx = lerpf(player->prev_xx, player->xx, alpha);
+    player->render_yy = lerpf(player->prev_yy, player->yy, alpha);
 }
 
 void player_fixed_update(Player *player, float dt, Input *input, Camera *camera)
