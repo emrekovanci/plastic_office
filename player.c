@@ -33,12 +33,12 @@ void player_init(Player *player)
     texture_load("assets/Gangsters_1/Walk.png", &player->texture_walk);
     texture_load("assets/Gangsters_1/Run.png",  &player->texture_run);
 
-    player->cx = MAP_COLS / 2;
-    player->cy = 0;
+    player->cx = 2;
+    player->cy = 1;
     player->xr = 0.5f;
-    player->yr = 1.0f;
-    player->xx = (int)((player->cx + player->xr) * TILE_RENDER_SIZE);
-    player->yy = (int)((player->cy + player->yr) * TILE_RENDER_SIZE);
+    player->yr = 0.0f;
+    player->xx = (player->cx + player->xr) * TILE_RENDER_SIZE;
+    player->yy = (player->cy + player->yr) * TILE_RENDER_SIZE;
     player->prev_xx = player->xx;
     player->prev_yy = player->yy;
     player->render_xx = player->xx;
@@ -58,17 +58,27 @@ void player_destroy(Player *player)
     sprite_destroy(&player->sprite);
 }
 
-void player_on_pre_step_x(Player *player)
+void player_on_pre_step_x(Player *player, Tilemap *tilemap)
+{
+    if (tilemap_has_collision(tilemap, player->cx + 1, invert_y(player->cy)) && player->xr >= 0.7f) {
+        player->xr = 0.7f;
+        player->dx = 0.0f;
+    }
+
+    if (tilemap_has_collision(tilemap, player->cx - 1, invert_y(player->cy)) && player->xr <= 0.3f) {
+        player->xr = 0.3f;
+        player->dx = 0.0f;
+    }
+    
+    SDL_Log("Cx,Xr %d, %f", player->cx, player->xr);
+}
+
+void player_on_pre_step_y(Player *player, Tilemap *tilemap)
 {
 
 }
 
-void player_on_pre_step_y(Player *player)
-{
-
-}
-
-void player_fixed_update(Player *player, float dt, Input *input, Camera *camera)
+void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilemap)
 {
     // Save prev physic position for interpolation
     player->prev_xx = player->xx;
@@ -108,7 +118,7 @@ void player_fixed_update(Player *player, float dt, Input *input, Camera *camera)
             player->xr += player->dx / steps;
 
             if (player->dx != 0.0f)
-                player_on_pre_step_x(player);      // add x collision checks and physics in here
+                player_on_pre_step_x(player, tilemap);      // add x collision checks and physics in here
 
             while (player->xr > 1) { player->xr--; player->cx++; }
             while (player->xr < 0) { player->xr++; player->cx--; }
@@ -116,7 +126,7 @@ void player_fixed_update(Player *player, float dt, Input *input, Camera *camera)
             player->yr += player->dy / steps;
 
             if (player->dy != 0.0f)
-                player_on_pre_step_y(player);     // add y collision checks and physics in here
+                player_on_pre_step_y(player, tilemap);     // add y collision checks and physics in here
 
             while (player->yr > 1) { player->yr--; player->cy++; }
             while (player->yr < 0) { player->yr++; player->cy--; }
@@ -132,7 +142,7 @@ void player_fixed_update(Player *player, float dt, Input *input, Camera *camera)
         player->is_moving = fabsf(player->dx) > 0.01f;
 }
 
-void player_update(Player *player, float dt, Input *input, Camera *camera, float alpha)
+void player_update(Player *player, float dt, Input *input, float alpha, Tilemap *tilemap)
 {
     player->anim_timer += dt;
     if (player->anim_timer >= PLAYER_FRAME_TIME) {
@@ -146,14 +156,11 @@ void player_update(Player *player, float dt, Input *input, Camera *camera, float
 
 void player_render(Player *player, Shader *shader)
 {
-    // There is only one row in current animation tilesheets
-    // This should be player's direction if there are multiple rows
     const int dir_row = 0;
 
     float u0, v0, u1, v1;
     tile_uv(anim_rows(player), anim_cols(player), dir_row * anim_cols(player) + player->anim_frame, &u0, &v0, &u1, &v1);
 
-    // Flip UV when direction change
     if (player->dir == DIRECTION_W)
         swapf(&u0, &u1);
 
@@ -174,9 +181,11 @@ void player_render(Player *player, Shader *shader)
         &player->sprite,
         anim_texture(player),
         shader,
-        player->render_xx, player->render_yy,
+        player->render_xx,
+        player->render_yy,
         PLAYER_RENDER_SIZE, PLAYER_RENDER_SIZE,
-        0.0f);
+        0.0f,
+        0.5f, 0.0f);
 }
 
 void player_set_coords(Player *player, float x, float y)
@@ -186,5 +195,5 @@ void player_set_coords(Player *player, float x, float y)
     player->cx = (int)(player->xx / TILE_RENDER_SIZE);
     player->cy = (int)(player->yy / TILE_RENDER_SIZE);
     player->xr = (player->xx - player->cx * TILE_RENDER_SIZE) / TILE_RENDER_SIZE;
-    player->yr = (player->yy - player->cy * TILE_RENDER_SIZE) / TILE_RENDER_SIZE;
+    player->yr = (player->yy - player->cy * TILE_RENDER_SIZE) / TILE_RENDER_SIZE;    
 }

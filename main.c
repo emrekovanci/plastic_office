@@ -15,8 +15,10 @@
 #define WINDOW_WIDTH  1920
 #define WINDOW_HEIGHT 1080
 
-static void sync_vp(Shader *shader, Camera *camera)
+static void sync_vp(SDL_Window *window, Shader *shader, Camera *camera)
 {
+    SDL_GetWindowSizeInPixels(window, &camera->viewport_w, &camera->viewport_h);
+
     glViewport(camera->viewport_x, camera->viewport_y, camera->viewport_w, camera->viewport_h);
 
     mat4 proj;
@@ -112,13 +114,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     SDL_Log("Renderer: %s", glGetString(GL_RENDERER));
     SDL_Log("Vendor: %s", glGetString(GL_VENDOR));
 
-    camera_reset(&g_camera, app->window);
-    SDL_Log("Viewport Size in pixels: %d, %d", g_camera.viewport_w, g_camera.viewport_h);
-
     if (!tilemap_build(&g_map))
         return SDL_APP_FAILURE;
 
-    shader_load(&g_shader, "assets/vert.glsl", "assets/frag.glsl");
     texture_load("assets/Sky.png", &g_bg_sky_tex);
     texture_load("assets/Background_Layer1.png", &g_bg1_tex);
     texture_load("assets/Background_Layer2.png", &g_bg2_tex);
@@ -127,16 +125,19 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     sprite_init(&g_bg2_spr);
     sprite_init(&g_bg1_spr);
 
+    player_init(&g_player);
+
+    shader_load(&g_shader, "assets/vert.glsl", "assets/frag.glsl");
     shader_bind(&g_shader);
     shader_set_int(&g_shader, "texture1", 0);
 
-    player_init(&g_player);
+    camera_init(&g_camera);
+    sync_vp(app->window, &g_shader, &g_camera);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    sync_vp(&g_shader, &g_camera);
-
+    SDL_Log("Viewport Size in pixels: %d, %d", g_camera.viewport_w, g_camera.viewport_h);
     return SDL_APP_CONTINUE;
 }
 
@@ -165,7 +166,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     }
 
     if (event->type == SDL_EVENT_WINDOW_RESIZED) {
-        sync_vp(&g_shader, &g_camera);
+        sync_vp(app->window, &g_shader, &g_camera);
         SDL_Log("Window resized: W: %d, H: %d", event->window.data1, event->window.data2);
     }
 
@@ -185,19 +186,13 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     input_update(&g_input);
 
     while (app->accumulator >= FIXED_TIMESTEP) {
-        player_fixed_update(&g_player, FIXED_TIMESTEP, &g_input, &g_camera);
+        player_fixed_update(&g_player, FIXED_TIMESTEP, &g_input, &g_map);
         app->accumulator -= FIXED_TIMESTEP;
     }
 
     const float alpha = (float)(app->accumulator / FIXED_TIMESTEP);
-    player_update(&g_player, dt, &g_input, &g_camera, alpha);
-
-    // camera zoom & movement
-    float zoom = lerpf(g_camera.zoom, g_camera.zoom_target, 1.0f - expf(-10.0f * dt));
-    zoom = roundf(zoom * 1000.0f) / 1000.0f;
-    g_camera.zoom = zoom;
-    const float target_y = (g_camera.viewport_h * 0.5f) / g_camera.zoom;
-    camera_follow(&g_camera, g_player.render_xx + PLAYER_RENDER_SIZE * 0.5f, target_y);
+    player_update(&g_player, dt, &g_input, alpha, &g_map);
+    camera_update(&g_camera, dt, g_player.render_xx);
 
     // clear
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -210,7 +205,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
                   &g_shader,
                   0.0f, 0.0f,
                   (float)g_bg_sky_tex.width * TILE_SCALE, (float)g_bg_sky_tex.height * TILE_SCALE,
-                  0.0f);
+                  0.0f,
+                  0.0f, 0.0f);
 
     set_parallax_view(&g_shader, &g_camera, 0.01f);
     sprite_render(&g_bg1_spr,
@@ -218,7 +214,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
                   &g_shader,
                   0.0f, 0.0f,
                   (float)g_bg1_tex.width * TILE_SCALE, (float)g_bg1_tex.height * TILE_SCALE,
-                  0.0f);
+                  0.0f,
+                  0.0f, 0.0f);
 
     set_parallax_view(&g_shader, &g_camera, 0.2f);
     sprite_render(&g_bg2_spr,
@@ -226,7 +223,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
                   &g_shader,
                   0.0f, 0.0f,
                   (float)g_bg2_tex.width * TILE_SCALE, (float)g_bg2_tex.height * TILE_SCALE,
-                  0.0f);
+                  0.0f,
+                  0.0f, 0.0f);
 
     // render foreground
     mat4 view;

@@ -2,7 +2,6 @@
 #define CAMERA_H
 
 #include <cglm/cglm.h>
-#include <SDL3/SDL.h>
 
 typedef struct Camera Camera;
 struct Camera {
@@ -17,8 +16,8 @@ struct Camera {
     float zoom_target;
 };
 
-void camera_reset(Camera *camera, SDL_Window *window);
-void camera_follow(Camera *camera, float target_x, float target_y);
+void camera_init(Camera *camera);
+void camera_update(Camera *camera, float dt, float target_x);
 void camera_view(Camera *camera, mat4 out);
 void camera_proj(Camera *camera, mat4 out);
 

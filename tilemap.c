@@ -126,6 +126,9 @@ bool tilemap_build(Tilemap *out)
         layer->index_count = i;
         tilemap_layer_upload(layer);
     }
+            
+    if (!tilemap_read("assets/side_Layer_4_Collision.csv", out->collision))
+        return false;  
 
     return true;
 }
@@ -143,6 +146,11 @@ void tilemap_render(Tilemap *tilemap, Shader *shader)
         glBindVertexArray(layer->vao);
         glDrawElements(GL_TRIANGLES, layer->index_count, GL_UNSIGNED_INT, 0);
     }
+}
+
+bool tilemap_has_collision(Tilemap *tilemap, int x, int y)
+{
+    return tilemap->collision[y][x] > 0;
 }
 
 void tilemap_destroy(Tilemap *tilemap)

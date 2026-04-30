@@ -8,6 +8,7 @@
 #include "input.h"
 #include "camera.h"
 #include "sprite.h"
+#include "tilemap.h"
 
 #define PLAYER_TILE_SIZE      128
 #define PLAYER_TILE_SCALE     4
@@ -54,21 +55,13 @@ struct Player {
     bool is_running;
 };
 
-typedef struct PlayerAABB PlayerAABB;
-struct PlayerAABB {
-    float half_w;
-    float half_h;
-    float offset_x;
-    float offset_y;
-};
-
 void player_init(Player *player);
 void player_destroy(Player *player);
 
-void player_on_pre_step_x(Player *player);
-void player_on_pre_step_y(Player *player);
-void player_fixed_update(Player *player, float dt, Input *input, Camera *camera);
-void player_update(Player *player, float dt, Input *input, Camera *camera, float alpha);
+void player_on_pre_step_x(Player *player, Tilemap *tilemap);
+void player_on_pre_step_y(Player *player, Tilemap *tilemap);
+void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilemap);
+void player_update(Player *player, float dt, Input *input, float alpha, Tilemap *tilemap);
 void player_render(Player *player, Shader *shader);
 
 // initialize cx, cy and xr, yr based on xx, yy

@@ -19,10 +19,12 @@ struct TilemapLayer {
 typedef struct Tilemap Tilemap;
 struct Tilemap {
     TilemapLayer layers[MAP_LAYERS];
+    int collision[MAP_ROWS][MAP_COLS];
 };
 
 bool tilemap_build(Tilemap *out);
 void tilemap_render(Tilemap *tilemap, Shader *shader);
+bool tilemap_has_collision(Tilemap *tilemap, int x, int y);
 void tilemap_destroy(Tilemap *tilemap);
 
 #endif

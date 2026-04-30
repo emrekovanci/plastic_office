@@ -1,19 +1,23 @@
 #include "camera.h"
+#include "utils.h"
 
-void camera_reset(Camera *camera, SDL_Window *window)
+void camera_init(Camera *camera)
 {
-    camera->viewport_x = 0;
-    camera->viewport_y = 0;
-    SDL_GetWindowSizeInPixels(window, &camera->viewport_w, &camera->viewport_h);
-
     camera->x = 0.0f;
     camera->y = 0.0f;
     camera->zoom = 1.0f;
     camera->zoom_target = 1.0f;
 }
 
-void camera_follow(Camera *camera, float target_x, float target_y)
+void camera_update(Camera *camera, float dt, float target_x)
 {
+    // zoom first
+    float zoom = lerpf(camera->zoom, camera->zoom_target, 1.0f - expf(-10.0f * dt));
+    zoom = roundf(zoom * 1000.0f) / 1000.0f; // FIX: zoom out/in causes scanline effect on tilemap
+    camera->zoom = zoom;
+
+    // follow later
+    const float target_y = (camera->viewport_h * 0.5f) / camera->zoom;
     camera->x = target_x;
     camera->y = target_y;
 }
