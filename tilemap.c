@@ -18,7 +18,8 @@ static const char *layer_textures[MAP_LAYERS] = {
     "assets/Decoration.png"
 };
 
-// TODO: if we invert tilemap y axis, no need to call invert_y() on collision checks etc.
+// Rows are loaded bottom-to-top so row 0 corresponds to the bottom of map,
+// matching world space. This avoids needing invert_y() on lookups.
 static bool tilemap_read(const char *path, int out[MAP_ROWS][MAP_COLS])
 {
     FILE *fp = fopen(path, "r");
@@ -28,8 +29,9 @@ static bool tilemap_read(const char *path, int out[MAP_ROWS][MAP_COLS])
     }
 
     int tmap[MAP_ROWS][MAP_COLS] = {0};
-    int row = 0;
+    int row = MAP_ROWS - 1;
     int col = 0;
+
     char line[MAP_COLS * 4 + 2] = {0};
     while (fgets(line, sizeof(line), fp)) {
         col = 0;
@@ -39,7 +41,7 @@ static bool tilemap_read(const char *path, int out[MAP_ROWS][MAP_COLS])
             tmap[row][col++] = SDL_atoi(pc);
             pc = SDL_strtok_r(NULL, ",", &ctx);
         }
-        ++row;
+        --row;
     }
     fclose(fp);
 
@@ -100,7 +102,7 @@ bool tilemap_build(Tilemap *out)
                     continue;
 
                 float x0 = (float)x * TILE_SIZE;
-                float y0 = (float)invert_y(y) * TILE_SIZE;
+                float y0 = (float)y * TILE_SIZE;
                 float x1 = x0 + TILE_SIZE;
                 float y1 = y0 + TILE_SIZE;
 

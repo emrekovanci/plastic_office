@@ -60,12 +60,12 @@ void player_destroy(Player *player)
 
 void player_on_pre_step_x(Player *player, Tilemap *tilemap)
 {
-    if (tilemap_has_collision(tilemap, player->cx + 1, invert_y(player->cy)) && player->xr >= 0.7f) {
+    if (tilemap_has_collision(tilemap, player->cx + 1, player->cy) && player->xr >= 0.7f) {
         player->xr = 0.7f;
         player->dx = 0.0f;
     }
 
-    if (tilemap_has_collision(tilemap, player->cx - 1, invert_y(player->cy)) && player->xr <= 0.3f) {
+    if (tilemap_has_collision(tilemap, player->cx - 1, player->cy) && player->xr <= 0.3f) {
         player->xr = 0.3f;
         player->dx = 0.0f;
     }
