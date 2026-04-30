@@ -58,13 +58,11 @@ void sprite_render(Sprite *sprite, Texture *texture, Shader *shader,
 
     mat4 model = GLM_MAT4_IDENTITY_INIT;
     glm_translate(model, (vec3){ x - (size_x * pivot_x), y - (size_y * pivot_y), 0.0f });
-
-    // pivot to center transformation start
+    // rotation around pivot start
     glm_translate(model, (vec3){ size_x * pivot_x, size_y * pivot_y, 0.0f });
     glm_rotate(model, glm_rad(rotation), (vec3){ 0.0f, 0.0f, 1.0f });
     glm_translate(model, (vec3){ -size_x * pivot_x, -size_y * pivot_y, 0.0f });
-    // pivot to center transformation end
-
+    // rotation around pivot end
     glm_scale(model, (vec3){ size_x, size_y, 1.0f });
 
     shader_set_mat4(shader, "model", (float*)model);

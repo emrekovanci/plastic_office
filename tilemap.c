@@ -18,6 +18,7 @@ static const char *layer_textures[MAP_LAYERS] = {
     "assets/Decoration.png"
 };
 
+// TODO: if we invert tilemap y axis, no need to call invert_y() on collision checks etc.
 static bool tilemap_read(const char *path, int out[MAP_ROWS][MAP_COLS])
 {
     FILE *fp = fopen(path, "r");
