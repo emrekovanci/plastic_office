@@ -10,7 +10,6 @@
 #include "player.h"
 #include "input.h"
 #include "sprite.h"
-#include "utils.h"
 
 #define WINDOW_WIDTH  1920
 #define WINDOW_HEIGHT 1080
@@ -34,6 +33,18 @@ static void set_parallax_view(Shader *shader, Camera *camera, float factor)
     vec3 translation = { -camera->x * factor, 0.0f, 0.0f };
     glm_translate(view, translation);
     shader_set_mat4(shader, "view", (float*)view);
+}
+
+static void render_background(Sprite *sprite, Texture *texture, Shader *shader, Camera *camera, float factor)
+{
+    set_parallax_view(shader, camera, factor);
+    sprite_render(sprite,
+                  texture,
+                  shader,
+                  0.0f, 0.0f,
+                  (float)texture->width * TILE_SCALE, (float)texture->height * TILE_SCALE,
+                  0.0f,
+                  0.0f, 0.0f);
 }
 
 Shader g_shader;
@@ -101,7 +112,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     if (!SDL_GL_SetSwapInterval(1))
         SDL_Log("Failed to activate VSync: %s", SDL_GetError());
-    
+
     if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
         SDL_Log("Failed to load glad: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -113,6 +124,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     SDL_Log("GLSL Version: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
     SDL_Log("Renderer: %s", glGetString(GL_RENDERER));
     SDL_Log("Vendor: %s", glGetString(GL_VENDOR));
+
+    camera_init(&g_camera);
 
     if (!tilemap_build(&g_map))
         return SDL_APP_FAILURE;
@@ -131,13 +144,12 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     shader_bind(&g_shader);
     shader_set_int(&g_shader, "texture1", 0);
 
-    camera_init(&g_camera);
     sync_vp(app->window, &g_shader, &g_camera);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    SDL_Log("Viewport Size in pixels: %d, %d", g_camera.viewport_w, g_camera.viewport_h);
+    SDL_Log("Viewport size: W: %d, H: %d", g_camera.viewport_w, g_camera.viewport_h);
     return SDL_APP_CONTINUE;
 }
 
@@ -198,33 +210,12 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    shader_bind(&g_shader);
+
     // render background
-    set_parallax_view(&g_shader, &g_camera, 0.0f);
-    sprite_render(&g_bg_sky_spr,
-                  &g_bg_sky_tex,
-                  &g_shader,
-                  0.0f, 0.0f,
-                  (float)g_bg_sky_tex.width * TILE_SCALE, (float)g_bg_sky_tex.height * TILE_SCALE,
-                  0.0f,
-                  0.0f, 0.0f);
-
-    set_parallax_view(&g_shader, &g_camera, 0.01f);
-    sprite_render(&g_bg1_spr,
-                  &g_bg1_tex,
-                  &g_shader,
-                  0.0f, 0.0f,
-                  (float)g_bg1_tex.width * TILE_SCALE, (float)g_bg1_tex.height * TILE_SCALE,
-                  0.0f,
-                  0.0f, 0.0f);
-
-    set_parallax_view(&g_shader, &g_camera, 0.2f);
-    sprite_render(&g_bg2_spr,
-                  &g_bg2_tex,
-                  &g_shader,
-                  0.0f, 0.0f,
-                  (float)g_bg2_tex.width * TILE_SCALE, (float)g_bg2_tex.height * TILE_SCALE,
-                  0.0f,
-                  0.0f, 0.0f);
+    render_background(&g_bg_sky_spr, &g_bg_sky_tex, &g_shader, &g_camera, 0.0f);
+    render_background(&g_bg1_spr, &g_bg1_tex, &g_shader, &g_camera, 0.01f);
+    render_background(&g_bg2_spr, &g_bg2_tex, &g_shader, &g_camera, 0.2f);
 
     // render foreground
     mat4 view;
