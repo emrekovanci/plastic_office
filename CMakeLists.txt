@@ -10,6 +10,8 @@ project(
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 set(SDL_EXAMPLES OFF CACHE BOOL "Disable SDL examples" FORCE)
 set(SDL_TESTS OFF CACHE BOOL "Disable SDL tests" FORCE)
 set(SDL_TEST_LIBRARY OFF CACHE BOOL "Disable SDL test library" FORCE)
@@ -17,7 +19,9 @@ add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/glad EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/cglm EXCLUDE_FROM_ALL)
 
-add_executable(app
+# Game Library
+
+add_library(game_lib
   vendor/stb/stb_image.c
   constants.h
   vertex.h
@@ -30,10 +34,14 @@ add_executable(app
   player.h player.c
   input.h input.c
   sprite.h sprite.c
-  main.c
 )
-target_link_libraries(app PRIVATE glad SDL3::SDL3 cglm_headers)
-target_include_directories(app PRIVATE vendor/stb)
+target_link_libraries(game_lib PUBLIC glad SDL3::SDL3 cglm_headers)
+target_include_directories(game_lib PUBLIC . vendor/stb)
+
+# Game Executable
+
+add_executable(app main.c)
+target_link_libraries(app PRIVATE game_lib)
 
 add_custom_command(
   TARGET app POST_BUILD
@@ -48,3 +56,27 @@ add_custom_command(
 # if(MSVC)
 #   target_compile_options(app PRIVATE /FA)
 # endif()
+
+# Test Suite
+
+include(CTest)
+add_library(unity STATIC vendor/Unity/src/unity.c)
+target_include_directories(unity PUBLIC vendor/Unity/src)
+
+add_executable(tests
+  tests/test_tilemap.c
+  tests/test_input.c
+  tests/main.c
+)
+
+target_link_libraries(tests PRIVATE unity game_lib)
+
+add_custom_command(
+  TARGET tests POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/tests/test_assets $<TARGET_FILE_DIR:tests>/test_assets
+)
+
+add_test(NAME all_tests COMMAND tests)
+set_tests_properties(all_tests PROPERTIES
+  WORKING_DIRECTORY $<TARGET_FILE_DIR:tests>
+)

@@ -2,7 +2,6 @@
 #define PLAYER_H
 
 #include "direction.h"
-#include "vertex.h"
 #include "texture.h"
 #include "shader.h"
 #include "input.h"

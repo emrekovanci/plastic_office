@@ -27,3 +27,11 @@
 ```
 ffmpeg -i cap.mp4 -vf fps=60 frames/frame_%04d.png
 ```
+
+### Building & Testing
+
+```
+cmake --preset=msvc -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
+ctest --test-dir build -V
+```

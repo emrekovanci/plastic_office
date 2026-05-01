@@ -18,36 +18,7 @@ static const char *layer_textures[MAP_LAYERS] = {
     "assets/Decoration.png"
 };
 
-// Rows are loaded bottom-to-top so row 0 corresponds to the bottom of map,
-// matching world space. This avoids needing invert_y() on lookups.
-static bool tilemap_read(const char *path, int out[MAP_ROWS][MAP_COLS])
-{
-    FILE *fp = fopen(path, "r");
-    if (!fp) {
-        SDL_Log("Failed to open csv file: %s", path);
-        return false;
-    }
-
-    int tmap[MAP_ROWS][MAP_COLS] = {0};
-    int row = MAP_ROWS - 1;
-    int col = 0;
-
-    char line[MAP_COLS * 4 + 2] = {0};
-    while (fgets(line, sizeof(line), fp)) {
-        col = 0;
-        char *ctx = NULL;
-        char *pc = SDL_strtok_r(line, ",", &ctx);
-        while (pc) {
-            tmap[row][col++] = SDL_atoi(pc);
-            pc = SDL_strtok_r(NULL, ",", &ctx);
-        }
-        --row;
-    }
-    fclose(fp);
-
-    SDL_memcpy(out, tmap, sizeof(tmap));
-    return true;
-}
+static const char *layer_collision = "assets/side_Layer_4_Collision.csv";
 
 static void tilemap_layer_upload(TilemapLayer *layer)
 {
@@ -77,6 +48,37 @@ static void tilemap_layer_upload(TilemapLayer *layer)
     glEnableVertexAttribArray(2);
 }
 
+// Rows are loaded bottom-to-top so row 0 corresponds to the bottom of map,
+// matching world space. This avoids needing invert_y() on lookups.
+bool tilemap_read(const char *path, int out[MAP_ROWS][MAP_COLS])
+{
+    FILE *fp = fopen(path, "r");
+    if (!fp) {
+        SDL_Log("Failed to open csv file: %s", path);
+        return false;
+    }
+
+    int tmap[MAP_ROWS][MAP_COLS] = {0};
+    int row = MAP_ROWS - 1;
+    int col = 0;
+
+    char line[MAP_COLS * 4 + 2] = {0};
+    while (fgets(line, sizeof(line), fp)) {
+        col = 0;
+        char *ctx = NULL;
+        char *pc = SDL_strtok_r(line, ",", &ctx);
+        while (pc) {
+            tmap[row][col++] = SDL_atoi(pc);
+            pc = SDL_strtok_r(NULL, ",", &ctx);
+        }
+        --row;
+    }
+    fclose(fp);
+
+    SDL_memcpy(out, tmap, sizeof(tmap));
+    return true;
+}
+
 bool tilemap_build(Tilemap *out)
 {
     for (int l = 0; l < MAP_LAYERS; ++l) {
@@ -84,17 +86,16 @@ bool tilemap_build(Tilemap *out)
 
         if (!texture_load(layer_textures[l], &layer->texture))
             return false;
-        
+
         int map[MAP_ROWS][MAP_COLS] = {0};
         if (!tilemap_read(layer_csvs[l], map))
             return false;
 
-        const int tileset_cols = layer->texture.width / TILE_SIZE;
-        const int tileset_rows = layer->texture.height / TILE_SIZE;
-
+        const int cols = layer->texture.width / TILE_SIZE;
+        const int rows = layer->texture.height / TILE_SIZE;
         int v = 0;
         int i = 0;
-    
+
         for (int y = 0; y < MAP_ROWS; ++y) {
             for (int x = 0; x < MAP_COLS; ++x) {
                 const int tile_id = map[y][x];
@@ -107,7 +108,7 @@ bool tilemap_build(Tilemap *out)
                 float y1 = y0 + TILE_SIZE;
 
                 float u0, v0, u1, v1;
-                tile_uv(tileset_rows, tileset_cols, tile_id, &u0, &v0, &u1, &v1);
+                tile_uv(rows, cols, tile_id, &u0, &v0, &u1, &v1);
 
                 layer->vertices[v + 0] = (Vertex){ x1, y1, 0, 1, 1, 1, u1, v1 }; // top-right
                 layer->vertices[v + 1] = (Vertex){ x1, y0, 0, 1, 1, 1, u1, v0 }; // bottom-right
@@ -129,9 +130,9 @@ bool tilemap_build(Tilemap *out)
         layer->index_count = i;
         tilemap_layer_upload(layer);
     }
-            
-    if (!tilemap_read("assets/side_Layer_4_Collision.csv", out->collision))
-        return false;  
+
+    if (!tilemap_read(layer_collision, out->collision))
+        return false;
 
     return true;
 }
@@ -143,7 +144,7 @@ void tilemap_render(Tilemap *tilemap, Shader *shader)
     glm_translate(model, (vec3){ 0.0f, 0.0f, 0.0f });
     glm_scale(model, (vec3){ (float)TILE_SCALE, (float)TILE_SCALE, 1.0f });
     shader_set_mat4(shader, "model", (float*)model);
-    
+
     for (int i = 0; i < MAP_LAYERS; ++i) {
         TilemapLayer *layer = &tilemap->layers[i];
         texture_bind(&layer->texture, 0);
