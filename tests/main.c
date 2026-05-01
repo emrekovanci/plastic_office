@@ -62,6 +62,6 @@ int main(void)
     RUN_TEST(test_mouse_pressed_when_held);
     RUN_TEST(test_mouse_released_when_curr_false_prev_true);
     RUN_TEST(test_mouse_released_when_still_held);
-    
+
     return UNITY_END();
 }

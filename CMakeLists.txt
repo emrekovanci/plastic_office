@@ -70,6 +70,7 @@ add_executable(tests
 )
 
 target_link_libraries(tests PRIVATE unity game_lib)
+set_target_properties(tests PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 add_custom_command(
   TARGET tests POST_BUILD
