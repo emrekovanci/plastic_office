@@ -157,26 +157,24 @@ void player_update(Player *player, float dt, Input *input, float alpha, Tilemap 
 
 void player_render(Player *player, Shader *shader)
 {
-    const int dir_row = 0;
+    const int cols = anim_cols(player);
+    const int rows = anim_rows(player);
+    const int frame = player->anim_frame;
+    const int dir_row = 0; // animations are single-row sheets
 
-    float u0, v0, u1, v1;
-    tile_uv(anim_rows(player), anim_cols(player), dir_row * anim_cols(player) + player->anim_frame, &u0, &v0, &u1, &v1);
+    // size of one frame in UV space
+    float scale_x = 1.0f / cols;
+    float scale_y = 1.0f / rows;
+
+    // UV origin of current frame
+    float offset_x = frame * scale_x;
+    float offset_y = dir_row * scale_y;
 
     if (player->dir == DIRECTION_W)
-        swapf(&u0, &u1);
+        scale_x = -scale_x;
 
-    Sprite *sprite = &player->sprite;
-    sprite->vertices[0].u = u1;
-    sprite->vertices[0].v = v1;
-    sprite->vertices[1].u = u1;
-    sprite->vertices[1].v = v0;
-    sprite->vertices[2].u = u0;
-    sprite->vertices[2].v = v0;
-    sprite->vertices[3].u = u0;
-    sprite->vertices[3].v = v1;
-
-    glBindBuffer(GL_ARRAY_BUFFER, sprite->vbo);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(sprite->vertices), sprite->vertices);
+    shader_set_vec2(shader, "uv_scale", scale_x, scale_y);
+    shader_set_vec2(shader, "uv_offset", offset_x, offset_y);
 
     sprite_render(
         &player->sprite,
