@@ -69,7 +69,7 @@ void player_on_pre_step_x(Player *player, Tilemap *tilemap)
         player->xr = 0.3f;
         player->dx = 0.0f;
     }
-    
+
     SDL_Log("Cx,Xr %d, %f", player->cx, player->xr);
 }
 
@@ -84,12 +84,13 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
     player->prev_xx = player->xx;
     player->prev_yy = player->yy;
 
-    player->is_running =
-        input_key_down(input, SDL_SCANCODE_LSHIFT) || input_key_down(input, SDL_SCANCODE_RSHIFT);
-
     player->is_moving =
         input_key_down(input, SDL_SCANCODE_A) || input_key_down(input, SDL_SCANCODE_LEFT) ||
         input_key_down(input, SDL_SCANCODE_D) || input_key_down(input, SDL_SCANCODE_RIGHT);
+
+    player->is_running =
+        (player->is_moving) &&
+        (input_key_down(input, SDL_SCANCODE_LSHIFT) || input_key_down(input, SDL_SCANCODE_RSHIFT));
 
     float target_dx = 0.0f;
     const float speed = (player->is_running) ? PLAYER_RUN_SPEED : PLAYER_MOVE_SPEED;
@@ -195,5 +196,5 @@ void player_set_coords(Player *player, float x, float y)
     player->cx = (int)(player->xx / TILE_RENDER_SIZE);
     player->cy = (int)(player->yy / TILE_RENDER_SIZE);
     player->xr = (player->xx - player->cx * TILE_RENDER_SIZE) / TILE_RENDER_SIZE;
-    player->yr = (player->yy - player->cy * TILE_RENDER_SIZE) / TILE_RENDER_SIZE;    
+    player->yr = (player->yy - player->cy * TILE_RENDER_SIZE) / TILE_RENDER_SIZE;
 }
