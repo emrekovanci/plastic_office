@@ -9,16 +9,29 @@
 static const char *layer_csvs[MAP_LAYERS] = {
     "assets/side_Layer_1_Ground.csv",
     "assets/side_Layer_2_Buildings.csv",
-    "assets/side_Layer_3_Decos.csv"
+    "assets/side_Layer_3_Decos.csv",
+    "assets/side_Layer_4_Collision.csv"
 };
 
 static const char *layer_textures[MAP_LAYERS] = {
     "assets/Ground.png",
     "assets/Buildings.png",
-    "assets/Decoration.png"
+    "assets/Decoration.png",
+    "assets/Sprite_Collision.png"
 };
 
 static const char *layer_collision = "assets/side_Layer_4_Collision.csv";
+
+static void tile_uv(int rows, int cols, int tile_id, float *u0, float *v0, float *u1, float *v1)
+{
+    const int col = tile_id % cols;
+    const int row = (rows - 1) - (tile_id / cols);
+
+    *u0 = (float)col / cols;
+    *v0 = (float)row / rows;
+    *u1 = *u0 + 1.0f / cols;
+    *v1 = *v0 + 1.0f / rows;
+}
 
 static void tilemap_layer_upload(TilemapLayer *layer)
 {
@@ -48,8 +61,8 @@ static void tilemap_layer_upload(TilemapLayer *layer)
     glEnableVertexAttribArray(2);
 }
 
-// Rows are loaded bottom-to-top so row 0 corresponds to the bottom of map,
-// matching world space. This avoids needing invert_y() on lookups.
+// rows are loaded bottom-to-top so row 0 corresponds to the bottom of map,
+// matching world space. this avoids needing invert_y() on lookups
 bool tilemap_read(const char *path, int out[MAP_ROWS][MAP_COLS])
 {
     FILE *fp = fopen(path, "r");
@@ -129,11 +142,14 @@ bool tilemap_build(Tilemap *out)
         layer->vertex_count = v;
         layer->index_count = i;
         tilemap_layer_upload(layer);
+        layer->visible = true;
     }
 
     if (!tilemap_read(layer_collision, out->collision))
         return false;
 
+    // last layer is collision layer
+    out->layers[MAP_LAYERS - 1].visible = false;
     return true;
 }
 
@@ -147,6 +163,9 @@ void tilemap_render(Tilemap *tilemap, Shader *shader)
 
     for (int i = 0; i < MAP_LAYERS; ++i) {
         TilemapLayer *layer = &tilemap->layers[i];
+        if (!layer->visible)
+            continue;
+
         texture_bind(&layer->texture, 0);
         glBindVertexArray(layer->vao);
         glDrawElements(GL_TRIANGLES, layer->index_count, GL_UNSIGNED_INT, 0);
@@ -155,13 +174,18 @@ void tilemap_render(Tilemap *tilemap, Shader *shader)
 
 bool tilemap_has_collision(Tilemap *tilemap, int x, int y)
 {
-    return tilemap->collision[y][x] > 0;
+    if (x < 0 || x >= MAP_COLS || y < 0 || y >= MAP_ROWS)
+        return true;
+
+    return tilemap->collision[y][x] >= 0;
 }
+
 
 void tilemap_destroy(Tilemap *tilemap)
 {
     for (int i = 0; i < MAP_LAYERS; ++i) {
         TilemapLayer *layer = &tilemap->layers[i];
+
         glDeleteVertexArrays(1, &layer->vao);
         glDeleteBuffers(1, &layer->vbo);
         glDeleteBuffers(1, &layer->ebo);

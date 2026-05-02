@@ -8,7 +8,7 @@ static bool texture_create_fallback(Texture *out)
 {
     // cyan
     unsigned char pixels[] = { 0, 255, 255, 255 };
-    
+
     unsigned int id;
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);

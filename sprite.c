@@ -18,7 +18,7 @@ void sprite_init(Sprite *sprite)
     sprite->indices[0] = 0;
     sprite->indices[1] = 1;
     sprite->indices[2] = 3;
-    
+
     sprite->indices[3] = 1;
     sprite->indices[4] = 2;
     sprite->indices[5] = 3;

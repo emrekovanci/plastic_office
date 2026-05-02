@@ -13,6 +13,7 @@ void test_collision_solid_tile(void)
 void test_collision_empty_tile(void)
 {
     Tilemap t = {0};
+    t.collision[0][0] = -1;
     TEST_ASSERT_FALSE(tilemap_has_collision(&t, 0, 0));
 }
 
@@ -27,9 +28,32 @@ void test_collision_cells_are_independent(void)
 {
     Tilemap t = {0};
     t.collision[0][0] = 1;
-    t.collision[0][1] = 0;
-    TEST_ASSERT_TRUE (tilemap_has_collision(&t, 0, 0));
+    t.collision[0][1] = -1;
+    TEST_ASSERT_TRUE(tilemap_has_collision(&t, 0, 0));
     TEST_ASSERT_FALSE(tilemap_has_collision(&t, 1, 0));
+}
+
+void test_collision_out_of_bounds_negative(void)
+{
+    Tilemap t = {0};
+    TEST_ASSERT_TRUE(tilemap_has_collision(&t, -1, 0));
+    TEST_ASSERT_TRUE(tilemap_has_collision(&t, 0, -1));
+}
+
+void test_collision_out_of_bounds_positive(void)
+{
+    Tilemap t = {0};
+    TEST_ASSERT_TRUE(tilemap_has_collision(&t, MAP_COLS, 0));
+    TEST_ASSERT_TRUE(tilemap_has_collision(&t, 0, MAP_ROWS));
+}
+
+void test_collision_boundary_coords_are_valid(void)
+{
+    Tilemap t = {0};
+    t.collision[0][0] = 1;
+    t.collision[MAP_ROWS - 1][MAP_COLS - 1] = 1;
+    TEST_ASSERT_TRUE(tilemap_has_collision(&t, 0, 0));
+    TEST_ASSERT_TRUE(tilemap_has_collision(&t, MAP_COLS - 1, MAP_ROWS - 1));
 }
 
 void test_read_returns_false_for_missing_file(void)

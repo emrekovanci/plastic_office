@@ -176,11 +176,12 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         switch (event->key.key) {
             case SDLK_F1: glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); break;
             case SDLK_F2: glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); break;
+            case SDLK_F3: g_tilemap.layers[MAP_LAYERS - 1].visible = !g_tilemap.layers[MAP_LAYERS - 1].visible; break;
             case SDLK_ESCAPE: return SDL_APP_SUCCESS;
-            case SDLK_1: app->time_scale = 1.0f;  break;
-            case SDLK_2: app->time_scale = 0.5f;  break;
-            case SDLK_3: app->time_scale = 0.1f;  break;
-            case SDLK_4: app->time_scale = 0.0f;  break;
+            case SDLK_1: app->time_scale = 1.0f; break;
+            case SDLK_2: app->time_scale = 0.5f; break;
+            case SDLK_3: app->time_scale = 0.1f; break;
+            case SDLK_4: app->time_scale = 0.0f; break;
             default: break;
         }
     }
@@ -208,7 +209,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     const Uint64 current_tick = SDL_GetTicks();
     float dt = (float)(current_tick - app->last_tick) / SDL_MS_PER_SECOND;
     dt = SDL_min(dt, 0.25f);
-    dt *= app->time_scale; 
+    dt *= app->time_scale;
     app->last_tick = current_tick;
     app->accumulator += dt;
 
