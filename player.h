@@ -57,14 +57,15 @@ struct Player {
     float dx;
     float dy;
 
+    float jump_buffer_timer;
+    float landing_timer;
+
     Direction dir;
     bool is_moving;
     bool is_running;
-    bool jump_pressed;
     bool grounded;
     bool prev_grounded;
     bool is_landing;
-    float landing_timer;
 };
 
 void player_init(Player *player);
@@ -75,8 +76,5 @@ void player_on_pre_step_y(Player *player, Tilemap *tilemap);
 void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilemap);
 void player_update(Player *player, float dt, Input *input, float alpha, Tilemap *tilemap);
 void player_render(Player *player, Shader *shader);
-
-// initialize cx, cy and xr, yr based on xx, yy
-void player_set_coords(Player *player, float x, float y);
 
 #endif

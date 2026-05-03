@@ -4,7 +4,7 @@
 #include <SDL3/SDL.h>
 #include <cglm/cglm.h>
 #include <stdio.h>
-#include "utils.h"
+#include "constants.h"
 
 static const char *layer_csvs[MAP_LAYERS] = {
     "assets/side_Layer_1_Ground.csv",

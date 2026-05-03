@@ -1,19 +1,22 @@
 #ifndef TILEMAP_H
 #define TILEMAP_H
 
-#include "constants.h"
 #include "vertex.h"
 #include "texture.h"
 #include "shader.h"
+
+#define MAP_LAYERS 4
+#define MAP_COLS   32
+#define MAP_ROWS   16
 
 typedef struct TilemapLayer TilemapLayer;
 struct TilemapLayer {
     Vertex vertices[MAP_COLS * MAP_ROWS * 4];
     unsigned int indices[MAP_COLS * MAP_ROWS * 6];
+    Texture texture;
     int vertex_count;
     int index_count;
     unsigned int vao, vbo, ebo;
-    Texture texture;
     bool visible;
 };
 

@@ -53,15 +53,14 @@ static Texture *anim_texture(Player *player)
 
 static int anim_rows(Player *player)
 {
-    return 1;
+    const Texture *tex = anim_texture(player);
+    return tex->height / PLAYER_TILE_SIZE;
 }
 
 static int anim_cols(Player *player)
 {
-    if (!player->grounded || player->is_landing) return 10;
-    if (player->is_moving && player->is_running) return 10;
-    if (player->is_moving) return 10;
-    return 6;
+    const Texture *tex = anim_texture(player);
+    return tex->width / PLAYER_TILE_SIZE;
 }
 
 static bool is_grounded(Player *player, Tilemap *tilemap)
@@ -80,8 +79,8 @@ void player_init(Player *player)
     sprite_init(&player->sprite);
     texture_load("assets/Gangsters_1/Idle.png", &player->texture_idle);
     texture_load("assets/Gangsters_1/Walk.png", &player->texture_walk);
-    texture_load("assets/Gangsters_1/Run.png",  &player->texture_run);
-    texture_load("assets/Gangsters_1/Jump.png",  &player->texture_jump);
+    texture_load("assets/Gangsters_1/Run.png", &player->texture_run);
+    texture_load("assets/Gangsters_1/Jump.png", &player->texture_jump);
     texture_create_solid(&g_texture_hitbox, 255, 0, 0, 100);
 
     player->cx = 2;
@@ -96,14 +95,14 @@ void player_init(Player *player)
     player->render_yy = player->yy;
     player->dx = 0.0f;
     player->dy = 0.0f;
+    player->jump_buffer_timer = 0.0f;
+    player->landing_timer = 0.0f;
     player->dir = DIRECTION_E;
     player->is_moving = false;
     player->is_running = false;
-    player->jump_pressed = false;
     player->grounded = false;
     player->prev_grounded = false;
     player->is_landing = false;
-    player->landing_timer = 0.0f;
 }
 
 void player_destroy(Player *player)
@@ -152,9 +151,8 @@ void player_on_pre_step_y(Player *player, Tilemap *tilemap)
     }
 
     // ceiling collision
-    float top_y = player->cy + player->yr + PLAYER_HITBOX_HEIGHT;
-    int top_cy = (int)floorf(top_y);
-
+    const float top_y = player->cy + player->yr + PLAYER_HITBOX_HEIGHT;
+    const int top_cy = (int)floorf(top_y);
     if (top_y - top_cy > 0.0f) {
         if (collides_y(tilemap, top_cy, x_min, x_max)) {
             player->yr = top_cy - player->cy - PLAYER_HITBOX_HEIGHT;
@@ -195,16 +193,17 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
         target_dx = speed;
     }
 
-    if (player->jump_pressed) {
+    player->jump_buffer_timer -= dt;
+    if (player->jump_buffer_timer > 0.0f && player->grounded) {
         player->dy = PLAYER_JUMP_FORCE;
-        player->jump_pressed = false;
+        player->jump_buffer_timer = 0.0f;
     }
 
     player->dx += (target_dx - player->dx) * 0.4f;
     player->dy += PLAYER_GRAVITY;
     player->dy *= 0.96f;
 
-    if (fabsf(player->dx) < 0.001f) player->dx = 0.0f;
+    if (fabsf(player->dx - target_dx) < 0.001f) player->dx = target_dx;
     if (fabsf(player->dy) < 0.001f) player->dy = 0.0f;
 
     // stepping: any movement greater than 33% of grid size (ie. 0.33) will increase the number of `steps` here.
@@ -240,15 +239,6 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
         player->is_moving = fabsf(player->dx) > 0.01f;
 
     player->grounded = is_grounded(player, tilemap);
-}
-
-void player_update(Player *player, float dt, Input *input, float alpha, Tilemap *tilemap)
-{
-    if (input_key_pressed(input, SDL_SCANCODE_F3))
-        g_render_hitbox = !g_render_hitbox;
-
-    if (input_key_pressed(input, SDL_SCANCODE_SPACE) && player->grounded)
-        player->jump_pressed = true;
 
     if (player->grounded && !player->prev_grounded) {
         player->is_landing = true;
@@ -256,6 +246,15 @@ void player_update(Player *player, float dt, Input *input, float alpha, Tilemap 
         player->anim_frame = 7;
         player->anim_timer = 0.0f;
     }
+}
+
+void player_update(Player *player, float dt, Input *input, float alpha, Tilemap *tilemap)
+{
+    if (input_key_pressed(input, SDL_SCANCODE_F3))
+        g_render_hitbox = !g_render_hitbox;
+
+    if (input_key_pressed(input, SDL_SCANCODE_SPACE))
+        player->jump_buffer_timer = 0.18f;
 
     if (player->is_landing) {
         player->landing_timer += dt;
@@ -329,14 +328,4 @@ void player_render(Player *player, Shader *shader)
 
     if (g_render_hitbox)
         player_render_hitbox(player, shader);
-}
-
-void player_set_coords(Player *player, float x, float y)
-{
-    player->xx = x;
-    player->yy = y;
-    player->cx = (int)(player->xx / TILE_RENDER_SIZE);
-    player->cy = (int)(player->yy / TILE_RENDER_SIZE);
-    player->xr = (player->xx - player->cx * TILE_RENDER_SIZE) / TILE_RENDER_SIZE;
-    player->yr = (player->yy - player->cy * TILE_RENDER_SIZE) / TILE_RENDER_SIZE;
 }

@@ -10,6 +10,7 @@
 #include "player.h"
 #include "input.h"
 #include "sprite.h"
+#include "constants.h"
 
 #define WINDOW_WIDTH  1920
 #define WINDOW_HEIGHT 1080
@@ -71,7 +72,7 @@ static void sync_vp(SDL_Window *window, Camera *camera)
 typedef struct AppContext AppContext;
 struct AppContext {
     bool wireframe;
-    float time_scale;
+    float timescale;
     Uint64 last_tick;
     double accumulator;
     SDL_Window *window;
@@ -108,7 +109,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
     *appstate = app;
-    app->time_scale = 1.0f;
+    app->timescale = 1.0f;
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -192,11 +193,11 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         switch (event->key.key) {
             case SDLK_F1: toggle_wireframe(app); break;
             case SDLK_F2: toggle_collision_visibility(); break;
+            case SDLK_1: app->timescale = 1.0f; break;
+            case SDLK_2: app->timescale = 0.5f; break;
+            case SDLK_3: app->timescale = 0.1f; break;
+            case SDLK_4: app->timescale = 0.0f; break;
             case SDLK_ESCAPE: return SDL_APP_SUCCESS;
-            case SDLK_1: app->time_scale = 1.0f; break;
-            case SDLK_2: app->time_scale = 0.5f; break;
-            case SDLK_3: app->time_scale = 0.1f; break;
-            case SDLK_4: app->time_scale = 0.0f; break;
             default: break;
         }
     }
@@ -224,7 +225,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     const Uint64 current_tick = SDL_GetTicks();
     float dt = (float)(current_tick - app->last_tick) / SDL_MS_PER_SECOND;
     dt = SDL_min(dt, 0.25f);
-    dt *= app->time_scale;
+    dt *= app->timescale;
     app->last_tick = current_tick;
     app->accumulator += dt;
 
