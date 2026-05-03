@@ -2,9 +2,7 @@
 #include "constants.h"
 #include "utils.h"
 
-// ================
-// hitbox debugging
-// ================
+// hitbox rendering for debugging purposes
 bool g_render_hitbox = false;
 Texture g_texture_hitbox = {0};
 static void player_render_hitbox(Player *player, Shader *shader)
@@ -74,6 +72,59 @@ static bool is_grounded(Player *player, Tilemap *tilemap)
     return collides_y(tilemap, player->cy - 1, x_min, x_max);
 }
 
+static void player_on_pre_step_x(Player *player, Tilemap *tilemap)
+{
+    const int y_min = (int)floorf(player->cy + player->yr);
+    const int y_max = (int)floorf(player->cy + player->yr + PLAYER_HITBOX_HEIGHT - 0.01f);
+
+    // right collision
+    // snap the right edge of the hitbox to the left edge of the right tile
+    const float right_x = player->cx + player->xr + PLAYER_HITBOX_HALF_WIDTH;
+    const int right_tile = (int)floorf(right_x);
+    if (right_x > right_tile) {
+        if (collides_x(tilemap, right_tile, y_min, y_max)) {
+            player->xr = right_tile - player->cx - PLAYER_HITBOX_HALF_WIDTH;
+            player->dx = 0.0f;
+        }
+    }
+
+    // left collision
+    // snap the left edge of the hitbox to the right edge of the left tile
+    const float left_x = player->cx + player->xr - PLAYER_HITBOX_HALF_WIDTH;
+    const int left_tile = (int)floorf(left_x);
+    if (left_x < left_tile + 1) {
+        if (collides_x(tilemap, left_tile, y_min, y_max)) {
+            player->xr = (left_tile + 1) - player->cx + PLAYER_HITBOX_HALF_WIDTH;
+            player->dx = 0.0f;
+        }
+    }
+}
+
+static void player_on_pre_step_y(Player *player, Tilemap *tilemap)
+{
+    const int x_min = (int)floorf(player->cx + player->xr - PLAYER_HITBOX_HALF_WIDTH + 0.01f);
+    const int x_max = (int)floorf(player->cx + player->xr + PLAYER_HITBOX_HALF_WIDTH - 0.01f);
+
+    // ground collision
+    if (player->yr < 0.0f) {
+        if (collides_y(tilemap, player->cy - 1, x_min, x_max)) {
+            player->yr = 0.0f;
+            player->dy = 0.0f;
+        }
+    }
+
+    // ceiling collision
+    const float top_y = player->cy + player->yr + PLAYER_HITBOX_HEIGHT;
+    const int top_tile = (int)floorf(top_y);
+    if (top_y > top_tile) {
+        if (collides_y(tilemap, top_tile, x_min, x_max)) {
+            player->yr = top_tile - player->cy - PLAYER_HITBOX_HEIGHT;
+            if (player->dy > 0.0f)
+                player->dy = 0.0f;
+        }
+    }
+}
+
 void player_init(Player *player)
 {
     sprite_init(&player->sprite);
@@ -113,57 +164,6 @@ void player_destroy(Player *player)
     texture_destroy(&player->texture_walk);
     texture_destroy(&player->texture_idle);
     sprite_destroy(&player->sprite);
-}
-
-void player_on_pre_step_x(Player *player, Tilemap *tilemap)
-{
-    const int y_min = (int)floorf(player->cy + player->yr);
-    const int y_max = (int)floorf(player->cy + player->yr + PLAYER_HITBOX_HEIGHT - 0.01f);
-
-    // right collision
-    const float right_x = player->cx + player->xr + PLAYER_HITBOX_HALF_WIDTH;
-    const int right_tile = (int)floorf(right_x);
-    if (right_x > right_tile) {
-        if (collides_x(tilemap, right_tile, y_min, y_max)) {
-            player->xr = right_tile - player->cx - PLAYER_HITBOX_HALF_WIDTH;
-            player->dx = 0.0f;
-        }
-    }
-
-    // left collision
-    const float left_x = player->cx + player->xr - PLAYER_HITBOX_HALF_WIDTH;
-    const int left_tile = (int)floorf(left_x);
-    if (left_x < left_tile + 1) {
-        if (collides_x(tilemap, left_tile, y_min, y_max)) {
-            player->xr = (left_tile + 1) - player->cx + PLAYER_HITBOX_HALF_WIDTH;
-            player->dx = 0.0f;
-        }
-    }
-}
-
-void player_on_pre_step_y(Player *player, Tilemap *tilemap)
-{
-    const int x_min = (int)floorf(player->cx + player->xr - PLAYER_HITBOX_HALF_WIDTH + 0.01f);
-    const int x_max = (int)floorf(player->cx + player->xr + PLAYER_HITBOX_HALF_WIDTH - 0.01f);
-
-    // ground collision
-    if (player->yr < 0.0f) {
-        if (collides_y(tilemap, player->cy - 1, x_min, x_max)) {
-            player->yr = 0.0f;
-            player->dy = 0.0f;
-        }
-    }
-
-    // ceiling collision
-    const float top_y = player->cy + player->yr + PLAYER_HITBOX_HEIGHT;
-    const int top_cy = (int)floorf(top_y);
-    if (top_y - top_cy > 0.0f) {
-        if (collides_y(tilemap, top_cy, x_min, x_max)) {
-            player->yr = top_cy - player->cy - PLAYER_HITBOX_HEIGHT;
-            if (player->dy > 0.0f)
-                player->dy = 0.0f;
-        }
-    }
 }
 
 void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilemap)

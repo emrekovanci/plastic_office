@@ -71,8 +71,6 @@ struct Player {
 void player_init(Player *player);
 void player_destroy(Player *player);
 
-void player_on_pre_step_x(Player *player, Tilemap *tilemap);
-void player_on_pre_step_y(Player *player, Tilemap *tilemap);
 void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilemap);
 void player_update(Player *player, float dt, Input *input, float alpha, Tilemap *tilemap);
 void player_render(Player *player, Shader *shader);

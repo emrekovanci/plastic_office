@@ -1,6 +1,7 @@
 ### TODOs
 
-- Cross Platform asset paths
+- Shader uniform caching
+- Cross platform asset paths
 
 ### Docs
 
