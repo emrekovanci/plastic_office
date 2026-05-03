@@ -121,17 +121,21 @@ void player_on_pre_step_x(Player *player, Tilemap *tilemap)
     const int y_max = (int)floorf(player->cy + player->yr + PLAYER_HITBOX_HEIGHT - 0.01f);
 
     // right collision
-    if (player->xr >= (1.0f - PLAYER_HITBOX_HALF_WIDTH)) {
-        if (collides_x(tilemap, player->cx + 1, y_min, y_max)) {
-            player->xr = 1.0f - PLAYER_HITBOX_HALF_WIDTH;
+    const float right_x = player->cx + player->xr + PLAYER_HITBOX_HALF_WIDTH;
+    const int right_tile = (int)floorf(right_x);
+    if (right_x > right_tile) {
+        if (collides_x(tilemap, right_tile, y_min, y_max)) {
+            player->xr = right_tile - player->cx - PLAYER_HITBOX_HALF_WIDTH;
             player->dx = 0.0f;
         }
     }
 
     // left collision
-    if (player->xr <= PLAYER_HITBOX_HALF_WIDTH) {
-        if (collides_x(tilemap, player->cx - 1, y_min, y_max)) {
-            player->xr = PLAYER_HITBOX_HALF_WIDTH;
+    const float left_x = player->cx + player->xr - PLAYER_HITBOX_HALF_WIDTH;
+    const int left_tile = (int)floorf(left_x);
+    if (left_x < left_tile + 1) {
+        if (collides_x(tilemap, left_tile, y_min, y_max)) {
+            player->xr = (left_tile + 1) - player->cx + PLAYER_HITBOX_HALF_WIDTH;
             player->dx = 0.0f;
         }
     }
