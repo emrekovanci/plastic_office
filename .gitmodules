@@ -1,9 +1,9 @@
 [submodule "vendor/SDL"]
-	path = vendor/SDL
-	url = https://github.com/libsdl-org/SDL.git
+    path = vendor/SDL
+    url = https://github.com/libsdl-org/SDL.git
 [submodule "vendor/cglm"]
-	path = vendor/cglm
-	url = https://github.com/recp/cglm.git
+    path = vendor/cglm
+    url = https://github.com/recp/cglm.git
 [submodule "vendor/Unity"]
-	path = vendor/Unity
-	url = https://github.com/ThrowTheSwitch/Unity.git
+    path = vendor/Unity
+    url = https://github.com/ThrowTheSwitch/Unity.git
