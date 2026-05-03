@@ -62,6 +62,23 @@ void texture_destroy(Texture *tex)
     glDeleteTextures(1, &tex->id);
 }
 
+bool texture_create_solid(Texture *out, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+{
+    unsigned char pixels[] = { r, g, b, a };
+    unsigned int id;
+    glGenTextures(1, &id);
+    glBindTexture(GL_TEXTURE_2D, id);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    out->id = id;
+    out->width = 1;
+    out->height = 1;
+    return true;
+}
+
 void texture_bind(const Texture *tex, int slot)
 {
     glActiveTexture(GL_TEXTURE0 + slot);

@@ -2,6 +2,29 @@
 #include "constants.h"
 #include "utils.h"
 
+// ================
+// hitbox debugging
+// ================
+bool g_render_hitbox = false;
+Texture g_texture_hitbox = {0};
+static void player_render_hitbox(Player *player, Shader *shader)
+{
+    const float width = PLAYER_HITBOX_HALF_WIDTH * 2.0f * TILE_RENDER_SIZE;
+    const float height = PLAYER_HITBOX_HEIGHT * TILE_RENDER_SIZE;
+
+    shader_set_vec2(shader, "uv_scale",  1.0f, 1.0f);
+    shader_set_vec2(shader, "uv_offset", 0.0f, 0.0f);
+
+    sprite_render(
+        &player->sprite,
+        &g_texture_hitbox,
+        shader,
+        player->render_xx, player->render_yy,
+        width, height,
+        0.0f,
+        0.5f, 0.0f);
+}
+
 static bool collides_x(Tilemap *tilemap, int tile_x, int y_min, int y_max)
 {
     for (int y = y_min; y <= y_max; ++y)
@@ -59,6 +82,7 @@ void player_init(Player *player)
     texture_load("assets/Gangsters_1/Walk.png", &player->texture_walk);
     texture_load("assets/Gangsters_1/Run.png",  &player->texture_run);
     texture_load("assets/Gangsters_1/Jump.png",  &player->texture_jump);
+    texture_create_solid(&g_texture_hitbox, 255, 0, 0, 100);
 
     player->cx = 2;
     player->cy = 5;
@@ -84,6 +108,7 @@ void player_init(Player *player)
 
 void player_destroy(Player *player)
 {
+    texture_destroy(&g_texture_hitbox);
     texture_destroy(&player->texture_jump);
     texture_destroy(&player->texture_run);
     texture_destroy(&player->texture_walk);
@@ -219,6 +244,9 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
 
 void player_update(Player *player, float dt, Input *input, float alpha, Tilemap *tilemap)
 {
+    if (input_key_pressed(input, SDL_SCANCODE_F4))
+        g_render_hitbox = !g_render_hitbox;
+
     if (input_key_pressed(input, SDL_SCANCODE_SPACE) && player->grounded)
         player->jump_pressed = true;
 
@@ -294,11 +322,13 @@ void player_render(Player *player, Shader *shader)
         &player->sprite,
         anim_texture(player),
         shader,
-        player->render_xx,
-        player->render_yy,
+        player->render_xx, player->render_yy,
         PLAYER_RENDER_SIZE, PLAYER_RENDER_SIZE,
         0.0f,
         0.5f, 0.0f);
+
+    if (g_render_hitbox)
+        player_render_hitbox(player, shader);
 }
 
 void player_set_coords(Player *player, float x, float y)
