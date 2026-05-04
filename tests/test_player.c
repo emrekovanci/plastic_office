@@ -79,7 +79,17 @@ void test_player_moves_right_when_right_key_held(void)
     float after_x = p.cx + p.xr;
 
     TEST_ASSERT_GREATER_THAN_FLOAT(before_x, after_x);
-    TEST_ASSERT_TRUE(p.dir == DIRECTION_E);
+}
+
+void test_player_faces_right_when_moving_right(void)
+{
+    Player p = make_player();
+    Tilemap t = make_tilemap_with_ground();
+    Input input = make_input_right();
+
+    simulate(&p, &input, &t, 1);
+
+    TEST_ASSERT_EQUAL(DIRECTION_E, p.dir);
 }
 
 void test_player_moves_left_when_left_key_held(void)
@@ -93,7 +103,17 @@ void test_player_moves_left_when_left_key_held(void)
     float after_x = p.cx + p.xr;
 
     TEST_ASSERT_LESS_THAN_FLOAT(before_x, after_x);
-    TEST_ASSERT_TRUE(p.dir == DIRECTION_W);
+}
+
+void test_player_faces_left_when_moving_left(void)
+{
+    Player p = make_player();
+    Tilemap t = make_tilemap_with_ground();
+    Input input = make_input_left();
+
+    simulate(&p, &input, &t, 1);
+
+    TEST_ASSERT_EQUAL(DIRECTION_W, p.dir);
 }
 
 void test_player_falls_without_ground(void)

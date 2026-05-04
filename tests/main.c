@@ -33,7 +33,9 @@ extern void test_mouse_released_when_still_held(void);
 
 // test_player.c
 extern void test_player_moves_right_when_right_key_held(void);
+extern void test_player_faces_right_when_moving_right(void);
 extern void test_player_moves_left_when_left_key_held(void);
+extern void test_player_faces_left_when_moving_left(void);
 extern void test_player_falls_without_ground(void);
 extern void test_player_does_not_fall_with_ground(void);
 extern void test_player_jump_applies_upward_velocity(void);
@@ -79,7 +81,9 @@ int main(void)
 
     // test_player
     RUN_TEST(test_player_moves_right_when_right_key_held);
+    RUN_TEST(test_player_faces_right_when_moving_right);
     RUN_TEST(test_player_moves_left_when_left_key_held);
+    RUN_TEST(test_player_faces_left_when_moving_left);
     RUN_TEST(test_player_falls_without_ground);
     RUN_TEST(test_player_does_not_fall_with_ground);
     RUN_TEST(test_player_jump_applies_upward_velocity);

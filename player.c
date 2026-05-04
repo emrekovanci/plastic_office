@@ -23,6 +23,11 @@ static void player_render_hitbox(Player *player, Shader *shader)
         0.5f, 0.0f);
 }
 
+static float analog_val2(float left, float right)
+{
+    return right - left;
+}
+
 static bool collides_x(Tilemap *tilemap, int tile_x, int y_min, int y_max)
 {
     for (int y = y_min; y <= y_max; ++y)
@@ -168,34 +173,29 @@ void player_destroy(Player *player)
 
 void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilemap)
 {
-    // save prev physic position for interpolation
+    // save prev physic state
     player->prev_xx = player->xx;
     player->prev_yy = player->yy;
-
-    // save prev grounded state for landing transition
     player->prev_grounded = player->grounded;
 
-    player->is_moving =
-        input_key_down(input, SDL_SCANCODE_A) || input_key_down(input, SDL_SCANCODE_LEFT) ||
-        input_key_down(input, SDL_SCANCODE_D) || input_key_down(input, SDL_SCANCODE_RIGHT);
+    // read sustained inputs
+    const bool left_down = input_key_down(input, SDL_SCANCODE_A) || input_key_down(input, SDL_SCANCODE_LEFT);
+    const bool right_down = input_key_down(input, SDL_SCANCODE_D) || input_key_down(input, SDL_SCANCODE_RIGHT);
+    const bool shift_down = input_key_down(input, SDL_SCANCODE_LSHIFT) || input_key_down(input, SDL_SCANCODE_RSHIFT);
+    const bool moving = analog_val2(left_down, right_down) != 0.0f;
+    const bool running = moving && shift_down;
 
-    player->is_running =
-        (player->is_moving) &&
-        (input_key_down(input, SDL_SCANCODE_LSHIFT) || input_key_down(input, SDL_SCANCODE_RSHIFT));
+    const float speed = running ? PLAYER_RUN_SPEED : PLAYER_MOVE_SPEED;
+    const float axis = analog_val2(left_down, right_down);
+    const float target_dx = speed * axis;
 
-    const float speed = (player->is_running) ? PLAYER_RUN_SPEED : PLAYER_MOVE_SPEED;
-
-    float target_dx = 0.0f;
-
-    if (input_key_down(input, SDL_SCANCODE_A) || input_key_down(input, SDL_SCANCODE_LEFT)) {
-        player->dir = DIRECTION_W;
-        target_dx = -speed;
-    }
-
-    if (input_key_down(input, SDL_SCANCODE_D) || input_key_down(input, SDL_SCANCODE_RIGHT)) {
+    if (target_dx > 0.0f)
         player->dir = DIRECTION_E;
-        target_dx = speed;
-    }
+    else if (target_dx < 0.0f)
+        player->dir = DIRECTION_W;
+
+    player->is_moving = moving;
+    player->is_running = running;
 
     player->jump_buffer_timer -= dt;
     if (player->jump_buffer_timer > 0.0f && player->grounded) {
@@ -207,12 +207,15 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
     player->dy += PLAYER_GRAVITY;
     player->dy *= 0.96f;
 
-    if (fabsf(player->dx - target_dx) < 0.001f) player->dx = target_dx;
-    if (fabsf(player->dy) < 0.001f) player->dy = 0.0f;
+    if (fabsf(player->dx - target_dx) < 0.001f)
+        player->dx = target_dx;
+
+    if (fabsf(player->dy) < 0.001f)
+        player->dy = 0.0f;
 
     // stepping: any movement greater than 33% of grid size (ie. 0.33) will increase the number of `steps` here.
     // these steps will break down the full movement into smaller iterations to avoid jumping over grid collisions.
-    int steps = (int)ceilf((fabsf(player->dx) + fabsf(player->dy)) / 0.33f);
+    const int steps = (int)ceilf((fabsf(player->dx) + fabsf(player->dy)) / 0.33f);
     if (steps > 0) {
         int n = 0;
         while (n < steps) {
