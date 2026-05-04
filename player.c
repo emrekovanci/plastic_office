@@ -258,7 +258,7 @@ void player_update(Player *player, float dt, Input *input, float alpha, Tilemap 
         g_render_hitbox = !g_render_hitbox;
 
     if (input_key_pressed(input, SDL_SCANCODE_SPACE))
-        player->jump_buffer_timer = 0.18f;
+        player->jump_buffer_timer = PLAYER_JUMP_BUFFER;
 
     if (player->is_landing) {
         player->landing_timer += dt;

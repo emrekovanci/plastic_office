@@ -36,6 +36,8 @@ extern void test_player_moves_right_when_right_key_held(void);
 extern void test_player_moves_left_when_left_key_held(void);
 extern void test_player_falls_without_ground(void);
 extern void test_player_does_not_fall_with_ground(void);
+extern void test_player_jump_applies_upward_velocity(void);
+extern void test_player_does_not_jump_when_buffer_empty(void);
 
 void setUp(void) { }
 void tearDown(void) { }
@@ -80,6 +82,8 @@ int main(void)
     RUN_TEST(test_player_moves_left_when_left_key_held);
     RUN_TEST(test_player_falls_without_ground);
     RUN_TEST(test_player_does_not_fall_with_ground);
+    RUN_TEST(test_player_jump_applies_upward_velocity);
+    RUN_TEST(test_player_does_not_jump_when_buffer_empty);
 
     return UNITY_END();
 }

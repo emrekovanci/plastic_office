@@ -25,6 +25,7 @@
 #define PLAYER_RUN_SPEED          0.16f
 #define PLAYER_GRAVITY           -0.05f
 #define PLAYER_JUMP_FORCE         0.67f
+#define PLAYER_JUMP_BUFFER        0.18f
 
 typedef struct Player Player;
 struct Player {

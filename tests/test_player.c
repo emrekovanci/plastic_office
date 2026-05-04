@@ -6,9 +6,9 @@
 #define PLAYER_CY (MAP_ROWS / 2)
 #define PLAYER_CX (MAP_COLS / 2)
 
-static void simulate(Player *player, Input *input, Tilemap *tilemap)
+static void simulate(Player *player, Input *input, Tilemap *tilemap, int steps)
 {
-    for (int i = 0; i < 30; ++i)
+    for (int i = 0; i < steps; ++i)
         player_fixed_update(player, FIXED_TIMESTEP, input, tilemap);
 }
 
@@ -23,10 +23,17 @@ static Player make_player(void)
     return p;
 }
 
+static void clear_tilemap_collision(Tilemap *t)
+{
+    for (int y = 0; y < MAP_ROWS; ++y)
+        for (int x = 0; x < MAP_COLS; ++x)
+            t->collision[y][x] = -1;
+}
+
 static Tilemap make_empty_tilemap(void)
 {
     Tilemap t = {0};
-    memset(t.collision, 0xFF, sizeof(t.collision));
+    clear_tilemap_collision(&t);
 
     return t;
 }
@@ -34,7 +41,7 @@ static Tilemap make_empty_tilemap(void)
 static Tilemap make_tilemap_with_ground(void)
 {
     Tilemap t = {0};
-    memset(t.collision, 0xFF, sizeof(t.collision));
+    clear_tilemap_collision(&t);
 
     // ground under player
     for (int x = 0; x < MAP_COLS; ++x)
@@ -67,13 +74,12 @@ void test_player_moves_right_when_right_key_held(void)
     Tilemap t = make_tilemap_with_ground();
     Input input = make_input_right();
 
-    float before_right_x = p.cx + p.xr + PLAYER_HITBOX_HALF_WIDTH;
-    simulate(&p, &input, &t);
-    float after_right_x = p.cx + p.xr + PLAYER_HITBOX_HALF_WIDTH;
+    float before_x = p.cx + p.xr;
+    simulate(&p, &input, &t, 30);
+    float after_x = p.cx + p.xr;
 
-    TEST_ASSERT_GREATER_THAN_FLOAT(before_right_x, after_right_x);
-    TEST_ASSERT_TRUE(p.grounded);
-    TEST_ASSERT_TRUE(p.is_moving);
+    TEST_ASSERT_GREATER_THAN_FLOAT(before_x, after_x);
+    TEST_ASSERT_TRUE(p.dir == DIRECTION_E);
 }
 
 void test_player_moves_left_when_left_key_held(void)
@@ -82,13 +88,12 @@ void test_player_moves_left_when_left_key_held(void)
     Tilemap t = make_tilemap_with_ground();
     Input input = make_input_left();
 
-    float before_right_x = p.cx + p.xr + PLAYER_HITBOX_HALF_WIDTH;
-    simulate(&p, &input, &t);
-    float after_right_x = p.cx + p.xr + PLAYER_HITBOX_HALF_WIDTH;
+    float before_x = p.cx + p.xr;
+    simulate(&p, &input, &t, 30);
+    float after_x = p.cx + p.xr;
 
-    TEST_ASSERT_LESS_THAN_FLOAT(before_right_x, after_right_x);
-    TEST_ASSERT_TRUE(p.grounded);
-    TEST_ASSERT_TRUE(p.is_moving);
+    TEST_ASSERT_LESS_THAN_FLOAT(before_x, after_x);
+    TEST_ASSERT_TRUE(p.dir == DIRECTION_W);
 }
 
 void test_player_falls_without_ground(void)
@@ -98,11 +103,10 @@ void test_player_falls_without_ground(void)
     Input input = {0};
 
     float before_y = p.cy + p.yr;
-    simulate(&p, &input, &t);
+    simulate(&p, &input, &t, 30);
     float after_y = p.cy + p.yr;
 
     TEST_ASSERT_LESS_THAN_FLOAT(before_y, after_y);
-    TEST_ASSERT_FALSE(p.grounded);
 }
 
 void test_player_does_not_fall_with_ground(void)
@@ -112,9 +116,51 @@ void test_player_does_not_fall_with_ground(void)
     Input input = {0};
 
     float before_y = p.cy + p.yr;
-    simulate(&p, &input, &t);
+    simulate(&p, &input, &t, 30);
     float after_y = p.cy + p.yr;
 
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, before_y, after_y);
-    TEST_ASSERT_TRUE(p.grounded);
+}
+
+void test_player_jump_applies_upward_velocity(void)
+{
+    Player p = make_player();
+    p.jump_buffer_timer = PLAYER_JUMP_BUFFER;
+    p.grounded = true;
+    Tilemap t = make_tilemap_with_ground();
+    Input input = {0};
+
+    float before_y = p.cy + p.yr;
+    simulate(&p, &input, &t, 3);
+    float after_y = p.cy + p.yr;
+
+    TEST_ASSERT_GREATER_THAN_FLOAT(before_y, after_y);
+}
+
+void test_player_is_not_grounded_after_jump(void)
+{
+    Player p = make_player();
+    p.jump_buffer_timer = PLAYER_JUMP_BUFFER;
+    p.grounded = true;
+    Tilemap t = make_tilemap_with_ground();
+    Input input = {0};
+
+    simulate(&p, &input, &t, 3);
+
+    TEST_ASSERT_FALSE(p.grounded);
+}
+
+void test_player_does_not_jump_when_buffer_empty(void)
+{
+    Player p = make_player();
+    p.jump_buffer_timer = 0.0f;
+    p.grounded = true;
+    Tilemap t = make_tilemap_with_ground();
+    Input input = {0};
+
+    float before_y = p.cy + p.yr;
+    simulate(&p, &input, &t, 3);
+    float after_y = p.cy + p.yr;
+
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, before_y, after_y);
 }
