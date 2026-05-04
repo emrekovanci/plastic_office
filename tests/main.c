@@ -31,6 +31,12 @@ extern void test_mouse_pressed_when_held(void);
 extern void test_mouse_released_when_curr_false_prev_true(void);
 extern void test_mouse_released_when_still_held(void);
 
+// test_player.c
+extern void test_player_moves_right_when_right_key_held(void);
+extern void test_player_moves_left_when_left_key_held(void);
+extern void test_player_falls_without_ground(void);
+extern void test_player_does_not_fall_with_ground(void);
+
 void setUp(void) { }
 void tearDown(void) { }
 
@@ -68,6 +74,12 @@ int main(void)
     RUN_TEST(test_mouse_pressed_when_held);
     RUN_TEST(test_mouse_released_when_curr_false_prev_true);
     RUN_TEST(test_mouse_released_when_still_held);
+
+    // test_player
+    RUN_TEST(test_player_moves_right_when_right_key_held);
+    RUN_TEST(test_player_moves_left_when_left_key_held);
+    RUN_TEST(test_player_falls_without_ground);
+    RUN_TEST(test_player_does_not_fall_with_ground);
 
     return UNITY_END();
 }

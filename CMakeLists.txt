@@ -66,6 +66,7 @@ target_include_directories(unity PUBLIC vendor/Unity/src)
 add_executable(tests
   tests/test_tilemap.c
   tests/test_input.c
+  tests/test_player.c
   tests/main.c
 )
 

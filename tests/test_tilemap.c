@@ -36,15 +36,15 @@ void test_collision_cells_are_independent(void)
 void test_collision_out_of_bounds_negative(void)
 {
     Tilemap t = {0};
-    TEST_ASSERT_TRUE(tilemap_has_collision(&t, -1, 0));
-    TEST_ASSERT_TRUE(tilemap_has_collision(&t, 0, -1));
+    TEST_ASSERT_FALSE(tilemap_has_collision(&t, -1, 0));
+    TEST_ASSERT_FALSE(tilemap_has_collision(&t, 0, -1));
 }
 
 void test_collision_out_of_bounds_positive(void)
 {
     Tilemap t = {0};
-    TEST_ASSERT_TRUE(tilemap_has_collision(&t, MAP_COLS, 0));
-    TEST_ASSERT_TRUE(tilemap_has_collision(&t, 0, MAP_ROWS));
+    TEST_ASSERT_FALSE(tilemap_has_collision(&t, MAP_COLS, 0));
+    TEST_ASSERT_FALSE(tilemap_has_collision(&t, 0, MAP_ROWS));
 }
 
 void test_collision_boundary_coords_are_valid(void)

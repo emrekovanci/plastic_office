@@ -175,11 +175,10 @@ void tilemap_render(Tilemap *tilemap, Shader *shader)
 bool tilemap_has_collision(Tilemap *tilemap, int x, int y)
 {
     if (x < 0 || x >= MAP_COLS || y < 0 || y >= MAP_ROWS)
-        return true;
+        return false;
 
     return tilemap->collision[y][x] >= 0;
 }
-
 
 void tilemap_destroy(Tilemap *tilemap)
 {
