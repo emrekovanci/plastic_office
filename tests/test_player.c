@@ -3,9 +3,14 @@
 #include <player.h>
 #include <constants.h>
 
-#define FIXED_TICKS 30
-#define PLAYER_CY   (MAP_ROWS / 2)
-#define PLAYER_CX   (MAP_COLS / 2)
+#define PLAYER_CY (MAP_ROWS / 2)
+#define PLAYER_CX (MAP_COLS / 2)
+
+static void simulate(Player *player, Input *input, Tilemap *tilemap)
+{
+    for (int i = 0; i < 30; ++i)
+        player_fixed_update(player, FIXED_TIMESTEP, input, tilemap);
+}
 
 static Player make_player(void)
 {
@@ -63,12 +68,12 @@ void test_player_moves_right_when_right_key_held(void)
     Input input = make_input_right();
 
     float before_right_x = p.cx + p.xr + PLAYER_HITBOX_HALF_WIDTH;
-    for (int i = 0; i < FIXED_TICKS; ++i)
-        player_fixed_update(&p, FIXED_TIMESTEP, &input, &t);
+    simulate(&p, &input, &t);
     float after_right_x = p.cx + p.xr + PLAYER_HITBOX_HALF_WIDTH;
 
     TEST_ASSERT_GREATER_THAN_FLOAT(before_right_x, after_right_x);
     TEST_ASSERT_TRUE(p.grounded);
+    TEST_ASSERT_TRUE(p.is_moving);
 }
 
 void test_player_moves_left_when_left_key_held(void)
@@ -78,12 +83,12 @@ void test_player_moves_left_when_left_key_held(void)
     Input input = make_input_left();
 
     float before_right_x = p.cx + p.xr + PLAYER_HITBOX_HALF_WIDTH;
-    for (int i = 0; i < FIXED_TICKS; ++i)
-        player_fixed_update(&p, FIXED_TIMESTEP, &input, &t);
+    simulate(&p, &input, &t);
     float after_right_x = p.cx + p.xr + PLAYER_HITBOX_HALF_WIDTH;
 
     TEST_ASSERT_LESS_THAN_FLOAT(before_right_x, after_right_x);
     TEST_ASSERT_TRUE(p.grounded);
+    TEST_ASSERT_TRUE(p.is_moving);
 }
 
 void test_player_falls_without_ground(void)
@@ -93,8 +98,7 @@ void test_player_falls_without_ground(void)
     Input input = {0};
 
     float before_y = p.cy + p.yr;
-    for (int i = 0; i < FIXED_TICKS; ++i)
-        player_fixed_update(&p, FIXED_TIMESTEP, &input, &t);
+    simulate(&p, &input, &t);
     float after_y = p.cy + p.yr;
 
     TEST_ASSERT_LESS_THAN_FLOAT(before_y, after_y);
@@ -108,8 +112,7 @@ void test_player_does_not_fall_with_ground(void)
     Input input = {0};
 
     float before_y = p.cy + p.yr;
-    for (int i = 0; i < FIXED_TICKS; ++i)
-        player_fixed_update(&p, FIXED_TIMESTEP, &input, &t);
+    simulate(&p, &input, &t);
     float after_y = p.cy + p.yr;
 
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, before_y, after_y);
