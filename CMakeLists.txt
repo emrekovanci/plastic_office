@@ -10,17 +10,12 @@ project(
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-set(SDL_EXAMPLES OFF CACHE BOOL "Disable SDL examples" FORCE)
-set(SDL_TESTS OFF CACHE BOOL "Disable SDL tests" FORCE)
-set(SDL_TEST_LIBRARY OFF CACHE BOOL "Disable SDL test library" FORCE)
 add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/glad EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/cglm EXCLUDE_FROM_ALL)
 
 # game library
-add_library(game_lib
+add_library(game_lib STATIC
   vendor/stb/stb_image.c
   constants.h
   vertex.h
