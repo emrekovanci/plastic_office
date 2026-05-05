@@ -26,6 +26,7 @@
 #define PLAYER_GRAVITY           -0.05f
 #define PLAYER_JUMP_FORCE         0.67f
 #define PLAYER_JUMP_BUFFER        0.18f
+#define PLAYER_EPSILON            0.001f
 
 typedef struct Player Player;
 struct Player {
@@ -58,6 +59,8 @@ struct Player {
     float dx;
     float dy;
 
+    float last_axis;
+    float axis_hold_timer;
     float jump_buffer_timer;
     float landing_timer;
 

@@ -139,6 +139,8 @@ void player_init(Player *player)
     texture_load("assets/Gangsters_1/Jump.png", &player->texture_jump);
     texture_create_solid(&g_texture_hitbox, 255, 0, 0, 100);
 
+    player->anim_frame = 0;
+    player->anim_timer = 0.0f;
     player->cx = 2;
     player->cy = 5;
     player->xr = 0.5f;
@@ -151,6 +153,8 @@ void player_init(Player *player)
     player->render_yy = player->yy;
     player->dx = 0.0f;
     player->dy = 0.0f;
+    player->last_axis = 0.0f;
+    player->axis_hold_timer = 0.0f;
     player->jump_buffer_timer = 0.0f;
     player->landing_timer = 0.0f;
     player->dir = DIRECTION_E;
@@ -182,12 +186,35 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
     const bool left_down = input_key_down(input, SDL_SCANCODE_A) || input_key_down(input, SDL_SCANCODE_LEFT);
     const bool right_down = input_key_down(input, SDL_SCANCODE_D) || input_key_down(input, SDL_SCANCODE_RIGHT);
     const bool shift_down = input_key_down(input, SDL_SCANCODE_LSHIFT) || input_key_down(input, SDL_SCANCODE_RSHIFT);
-    const bool moving = analog_val2(left_down, right_down) != 0.0f;
+
+    const float raw_axis = analog_val2(left_down, right_down * 2.0f);
+    float axis = signf(raw_axis);
+
+    if (axis != 0.0f) {
+        player->last_axis = axis;
+        player->axis_hold_timer = 0.05f;
+    } else {
+        player->axis_hold_timer -= dt;
+        if (player->axis_hold_timer > 0.0f)
+            axis = player->last_axis;
+    }
+
+    const bool moving = (axis != 0.0f);
     const bool running = moving && shift_down;
 
     const float speed = running ? PLAYER_RUN_SPEED : PLAYER_MOVE_SPEED;
-    const float axis = analog_val2(left_down, right_down);
-    const float target_dx = speed * axis;
+    const float target_dx = speed * signf(axis);
+
+    const bool direction_changed =
+        (target_dx > PLAYER_EPSILON && player->dx < -PLAYER_EPSILON) ||
+        (target_dx < -PLAYER_EPSILON && player->dx > PLAYER_EPSILON);
+
+    const bool speed_changed = (player->is_running != running) && moving;
+
+    if (direction_changed) {
+        player->anim_frame = 0;
+        player->anim_timer = 0.0f;
+    }
 
     if (target_dx > 0.0f)
         player->dir = DIRECTION_E;
@@ -203,14 +230,15 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
         player->jump_buffer_timer = 0.0f;
     }
 
-    player->dx += (target_dx - player->dx) * 0.4f;
+    const float friction = (fabsf(target_dx) < PLAYER_EPSILON) ? 0.80f : 0.4f;
+    player->dx += (target_dx - player->dx) * friction;
     player->dy += PLAYER_GRAVITY;
     player->dy *= 0.96f;
 
-    if (fabsf(player->dx - target_dx) < 0.001f)
+    if (fabsf(player->dx - target_dx) < PLAYER_EPSILON)
         player->dx = target_dx;
 
-    if (fabsf(player->dy) < 0.001f)
+    if (fabsf(player->dy) < PLAYER_EPSILON)
         player->dy = 0.0f;
 
     // stepping: any movement greater than 33% of grid size (ie. 0.33) will increase the number of `steps` here.
@@ -241,9 +269,6 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
 
     player->xx = (player->cx + player->xr) * TILE_RENDER_SIZE;
     player->yy = (player->cy + player->yr) * TILE_RENDER_SIZE;
-
-    if (!player->is_moving)
-        player->is_moving = fabsf(player->dx) > 0.01f;
 
     player->grounded = is_grounded(player, tilemap);
 
