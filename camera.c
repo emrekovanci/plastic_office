@@ -13,7 +13,6 @@ void camera_update(Camera *camera, float dt, float target_x)
 {
     // zoom first
     float zoom = lerpf(camera->zoom, camera->zoom_target, 1.0f - expf(-10.0f * dt));
-    zoom = roundf(zoom * 1000.0f) / 1000.0f; // FIX: zoom out/in causes scanline effect on tilemap
     camera->zoom = zoom;
 
     // follow later
