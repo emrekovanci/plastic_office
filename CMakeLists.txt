@@ -10,13 +10,15 @@ project(
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 
-add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/glad EXCLUDE_FROM_ALL)
+add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/cglm EXCLUDE_FROM_ALL)
+add_subdirectory(vendor/freetype EXCLUDE_FROM_ALL)
 
 # game library
 add_library(game_lib STATIC
   vendor/stb/stb_image.c
+  vendor/stb/stb_ds.c
   constants.h
   vertex.h
   direction.h direction.c
@@ -28,13 +30,18 @@ add_library(game_lib STATIC
   player.h player.c
   input.h input.c
   sprite.h sprite.c
+  font.h font.c
 )
-target_link_libraries(game_lib PUBLIC glad SDL3::SDL3 cglm_headers)
+target_link_libraries(game_lib PUBLIC glad SDL3::SDL3 cglm_headers freetype)
 target_include_directories(game_lib PUBLIC . vendor/stb)
 
 # game executable
 add_executable(app main.c)
 target_link_libraries(app PRIVATE game_lib)
+
+# font tests
+add_executable(test_font tests/renderer/test_font.c)
+target_link_libraries(test_font PRIVATE game_lib)
 
 # if(MSVC)
 #     target_compile_options(app PRIVATE /fsanitize=address)

@@ -70,8 +70,8 @@ static void tilemap_layer_upload(TilemapLayer *layer)
     glEnableVertexAttribArray(2);
 }
 
-// rows are loaded bottom-to-top so row 0 corresponds to the bottom of map,
-// matching world space. this avoids needing invert_y() on lookups
+// rows are loaded bottom-to-top so row 0 corresponds to the bottom of map, matching world space.
+// this avoids needing invert_y() on lookups
 bool tilemap_read(const char *path, int out[MAP_ROWS][MAP_COLS])
 {
     FILE *fp = fopen(path, "r");
@@ -132,14 +132,15 @@ bool tilemap_build(Tilemap *out)
                 float u0, v0, u1, v1;
                 tile_uv(rows, cols, tile_id, &u0, &v0, &u1, &v1);
 
-                layer->vertices[v + 0] = (Vertex){ x1, y1, 0, 1, 1, 1, u1, v1 }; // top-right
+                // counter-clockwise vertices and indices order
+                layer->vertices[v + 0] = (Vertex){ x0, y0, 0, 1, 1, 1, u0, v0 }; // bottom-left
                 layer->vertices[v + 1] = (Vertex){ x1, y0, 0, 1, 1, 1, u1, v0 }; // bottom-right
-                layer->vertices[v + 2] = (Vertex){ x0, y0, 0, 1, 1, 1, u0, v0 }; // bottom-left
+                layer->vertices[v + 2] = (Vertex){ x1, y1, 0, 1, 1, 1, u1, v1 }; // top-right
                 layer->vertices[v + 3] = (Vertex){ x0, y1, 0, 1, 1, 1, u0, v1 }; // top-left
                 layer->indices[i + 0] = v + 0;
                 layer->indices[i + 1] = v + 1;
-                layer->indices[i + 2] = v + 3;
-                layer->indices[i + 3] = v + 1;
+                layer->indices[i + 2] = v + 2;
+                layer->indices[i + 3] = v + 0;
                 layer->indices[i + 4] = v + 2;
                 layer->indices[i + 5] = v + 3;
 

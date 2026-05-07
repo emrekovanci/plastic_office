@@ -10,16 +10,15 @@ void sprite_init(Sprite *sprite)
     const float x1 = 1.0f;
     const float y1 = 1.0f;
 
-    sprite->vertices[0] = (Vertex){ x1, y1, 0, 1, 1, 1, 1, 1 }; // top-right
+    // counter-clockwise vertices and indices order
+    sprite->vertices[0] = (Vertex){ x0, y0, 0, 1, 1, 1, 0, 0 }; // bottom-left
     sprite->vertices[1] = (Vertex){ x1, y0, 0, 1, 1, 1, 1, 0 }; // bottom-right
-    sprite->vertices[2] = (Vertex){ x0, y0, 0, 1, 1, 1, 0, 0 }; // bottom-left
+    sprite->vertices[2] = (Vertex){ x1, y1, 0, 1, 1, 1, 1, 1 }; // top-right
     sprite->vertices[3] = (Vertex){ x0, y1, 0, 1, 1, 1, 0, 1 }; // top-left
-
     sprite->indices[0] = 0;
     sprite->indices[1] = 1;
-    sprite->indices[2] = 3;
-
-    sprite->indices[3] = 1;
+    sprite->indices[2] = 2;
+    sprite->indices[3] = 0;
     sprite->indices[4] = 2;
     sprite->indices[5] = 3;
 
