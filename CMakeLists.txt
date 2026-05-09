@@ -19,6 +19,7 @@ add_subdirectory(vendor/freetype EXCLUDE_FROM_ALL)
 add_library(game_lib STATIC
   vendor/stb/stb_image.c
   vendor/stb/stb_ds.c
+  color.h
   constants.h
   vertex.h
   direction.h direction.c

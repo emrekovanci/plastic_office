@@ -278,15 +278,15 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     // debug panel
     char debug_text[64];
     SDL_snprintf(debug_text, sizeof(debug_text), "DX: %.2f", g_player.dx);
-    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 180.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 180.0f, 1.0f, WHITE);
     SDL_snprintf(debug_text, sizeof(debug_text), "DY: %.2f", g_player.dy);
-    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 140.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 140.0f, 1.0f, WHITE);
     SDL_snprintf(debug_text, sizeof(debug_text), "Anim Frame: %d", g_player.anim_frame);
-    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 100.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 100.0f, 1.0f, WHITE);
     SDL_snprintf(debug_text, sizeof(debug_text), "Tile X: %.2f", g_player.cx + g_player.xr);
-    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 60.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 60.0f, 1.0f, WHITE);
     SDL_snprintf(debug_text, sizeof(debug_text), "Tile Y: %.2f", g_player.cy + g_player.yr);
-    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 20.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 20.0f, 1.0f, WHITE);
 
     SDL_GL_SwapWindow(app->window);
     return SDL_APP_CONTINUE;

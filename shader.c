@@ -153,6 +153,16 @@ void shader_set_vec4(const Shader *s, const char *name, float x, float y, float 
     glUniform4f(loc(s, name), x, y, z, w);
 }
 
+void shader_set_rgb(const Shader *s, const char *name, Color color)
+{
+    shader_set_vec3(s, name, color.r / 255.0f, color.g / 255.0f, color.b / 255.0f);
+}
+
+void shader_set_rgba(const Shader *s, const char *name, Color color)
+{
+    shader_set_vec4(s, name, color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
+}
+
 void shader_set_mat4(const Shader *s, const char *name, const float *value)
 {
     glUniformMatrix4fv(loc(s, name), 1, GL_FALSE, value);

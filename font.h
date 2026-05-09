@@ -3,6 +3,7 @@
 
 #include "texture.h"
 #include "shader.h"
+#include "color.h"
 #define STBDS_NO_SHORT_NAMES
 #include <stb_ds.h>
 #include <stdint.h>
@@ -43,6 +44,6 @@ struct Font {
 
 bool font_load(Font *font, const char *path, unsigned int size, int atlas_dim);
 void font_destroy(Font *font);
-void font_render_text(Font *font, Shader *shader, const char *text, float x, float y, float scale, float r, float g, float b);
+void font_render_text(Font *font, Shader *shader, const char *text, float x, float y, float scale, Color color);
 
 #endif

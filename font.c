@@ -143,10 +143,10 @@ void font_destroy(Font *font)
     FT_Done_FreeType(font->ft);
 }
 
-void font_render_text(Font *font, Shader *shader, const char *text, float x, float y, float scale, float r, float g, float b)
+void font_render_text(Font *font, Shader *shader, const char *text, float x, float y, float scale, Color color)
 {
     shader_bind(shader);
-    shader_set_vec3(shader, "textColor", r, g, b);
+    shader_set_rgb(shader, "textColor", color);
     texture_bind(&font->atlas, 0);
     glBindVertexArray(font->vao);
     glBindBuffer(GL_ARRAY_BUFFER, font->vbo);
