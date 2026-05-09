@@ -12,24 +12,22 @@ void input_update(Input *input)
 
 bool input_key_down(Input *input, SDL_Scancode key)
 {
-    return input->curr_kb[key] == true;
+    return input->curr_kb[key];
 }
 
 bool input_key_up(Input *input, SDL_Scancode key)
 {
-    return input->curr_kb[key] == false;
+    return !input->curr_kb[key];
 }
 
 bool input_key_pressed(Input *input, SDL_Scancode key)
 {
-    return input->curr_kb[key] == true &&
-           input->prev_kb[key] == false;
+    return input->curr_kb[key] && !input->prev_kb[key];
 }
 
 bool input_key_released(Input *input, SDL_Scancode key)
 {
-    return input->curr_kb[key] == false &&
-           input->prev_kb[key] == true;
+    return !input->curr_kb[key] && input->prev_kb[key];
 }
 
 bool input_mouse_down(Input *input, int btn)
