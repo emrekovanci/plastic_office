@@ -11,6 +11,7 @@
 #include "input.h"
 #include "sprite.h"
 #include "constants.h"
+#include "font.h"
 
 #define WINDOW_WIDTH  1920
 #define WINDOW_HEIGHT 1080
@@ -37,6 +38,7 @@ static void render_background(Sprite *sprite, Texture *texture, Shader *shader, 
                   0.0f, 0.0f);
 }
 
+// general
 Shader g_shader_sprite;
 Shader g_shader_default;
 Camera g_camera;
@@ -44,12 +46,15 @@ Tilemap g_tilemap;
 Player g_player;
 Input g_input;
 
+// text rendering
+Font g_font;
+Shader g_shader_text;
+
+// backgrounds
 Texture g_bg_sky_tex;
 Sprite g_bg_sky_spr;
-
 Texture g_bg2_tex;
 Sprite g_bg2_spr;
-
 Texture g_bg1_tex;
 Sprite g_bg1_spr;
 
@@ -62,11 +67,15 @@ static void sync_vp(SDL_Window *window, Camera *camera)
     mat4 proj;
     camera_proj(camera, proj);
 
+    shader_bind(&g_shader_text);
+    shader_set_mat4(&g_shader_text, "projection", (float*)proj);
+    
     shader_bind(&g_shader_default);
     shader_set_mat4(&g_shader_default, "projection", (float*)proj);
 
     shader_bind(&g_shader_sprite);
     shader_set_mat4(&g_shader_sprite, "projection", (float*)proj);
+
 }
 
 typedef struct AppContext AppContext;
@@ -152,6 +161,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     camera_init(&g_camera);
 
+    font_load(&g_font, "assets/fonts/NotoSans-Medium.ttf", 32, 512);
+
     if (!tilemap_build(&g_tilemap))
         return SDL_APP_FAILURE;
 
@@ -164,6 +175,10 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     sprite_init(&g_bg1_spr);
 
     player_init(&g_player);
+
+    shader_load(&g_shader_text, "assets/shaders/text_vs.glsl", "assets/shaders/text_fs.glsl");
+    shader_bind(&g_shader_text);
+    shader_set_int(&g_shader_text, "text", 0);
 
     shader_load(&g_shader_default, "assets/shaders/default_vs.glsl", "assets/shaders/default_fs.glsl");
     shader_bind(&g_shader_default);
@@ -260,6 +275,19 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     shader_set_mat4(&g_shader_sprite, "view", (float*)view);
     player_render(&g_player, &g_shader_sprite);
 
+    // debug panel
+    char debug_text[64];
+    SDL_snprintf(debug_text, sizeof(debug_text), "DX: %.2f", g_player.dx);
+    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 180.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+    SDL_snprintf(debug_text, sizeof(debug_text), "DY: %.2f", g_player.dy);
+    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 140.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+    SDL_snprintf(debug_text, sizeof(debug_text), "Anim Frame: %d", g_player.anim_frame);
+    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 100.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+    SDL_snprintf(debug_text, sizeof(debug_text), "Tile X: %.2f", g_player.cx + g_player.xr);
+    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 60.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+    SDL_snprintf(debug_text, sizeof(debug_text), "Tile Y: %.2f", g_player.cy + g_player.yr);
+    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 20.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+
     SDL_GL_SwapWindow(app->window);
     return SDL_APP_CONTINUE;
 }
@@ -279,6 +307,9 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
     player_destroy(&g_player);
     shader_destroy(&g_shader_default);
     shader_destroy(&g_shader_sprite);
+
+    font_destroy(&g_font);
+    shader_destroy(&g_shader_text);
 
     SDL_GL_DestroyContext(app->gl_context);
     SDL_DestroyWindow(app->window);

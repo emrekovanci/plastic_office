@@ -7,3 +7,6 @@
 [submodule "vendor/Unity"]
     path = vendor/Unity
     url = https://github.com/ThrowTheSwitch/Unity.git
+[submodule "vendor/freetype"]
+	path = vendor/freetype
+	url = https://gitlab.freedesktop.org/freetype/freetype.git
