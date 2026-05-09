@@ -1,8 +1,7 @@
 #ifndef DIRECTION_H
 #define DIRECTION_H
 
-typedef enum Direction Direction;
-enum Direction {
+typedef enum {
     DIRECTION_N       = 0x00, // n
     DIRECTION_NE      = 0x01, // ne
     DIRECTION_E       = 0x02, // e
@@ -14,7 +13,7 @@ enum Direction {
     DIRECTION_MASK    = 0x7,
     DIRECTION_RUNNING = 0x80,
     DIRECTION_NONE    = 0xED
-};
+} Direction;
 
 extern const int DIR_DELTA_X[8];
 extern const int DIR_DELTA_Y[8];
