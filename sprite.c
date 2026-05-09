@@ -25,7 +25,6 @@ void sprite_init(Sprite *sprite)
     glGenVertexArrays(1, &sprite->vao);
     glGenBuffers(1, &sprite->vbo);
     glGenBuffers(1, &sprite->ebo);
-
     glBindVertexArray(sprite->vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, sprite->vbo);
@@ -34,15 +33,10 @@ void sprite_init(Sprite *sprite)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sprite->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(sprite->indices), sprite->indices, GL_STATIC_DRAW);
 
-    // position
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(0);
-
-    // color
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-
-    // uv
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 }

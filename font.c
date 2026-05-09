@@ -33,6 +33,7 @@ static int utf8_decode(const char *p, uint32_t *codepoint)
         *codepoint = (s[0] & 0x07) << 18 | (s[1] & 0x3F) << 12 | (s[2] & 0x3F) << 6 | (s[3] & 0x3F);
         return 4;
     }
+
     *codepoint = 0xFFFD; // replacement character
     return 1;
 }
@@ -67,6 +68,7 @@ static Glyph *font_get_glyph(Font *font, uint32_t codepoint)
     const int y = font->cursor_y;
 
     if (w > 0 && h > 0) {
+        // atlas is always bound in font_render_text before any glyph lookup
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RED, GL_UNSIGNED_BYTE, gs->bitmap.buffer);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
@@ -168,16 +170,14 @@ void font_render_text(Font *font, Shader *shader, const char *text, float x, flo
         }
 
         // kerning - https://freetype.org/freetype2/docs/tutorial/step2.html (4.a)
-        {
-            if (font->kerning && prev_cp) {
-                FT_Vector delta;
-                FT_UInt prev_idx = FT_Get_Char_Index(font->face, prev_cp);
-                FT_UInt curr_idx = FT_Get_Char_Index(font->face, cp);
-                FT_Get_Kerning(font->face, prev_idx, curr_idx, FT_KERNING_DEFAULT, &delta);
-                x += (delta.x >> 6) * scale;
-            }
-            prev_cp = cp;
+        if (font->kerning && prev_cp) {
+            FT_Vector delta;
+            FT_UInt prev_idx = FT_Get_Char_Index(font->face, prev_cp);
+            FT_UInt curr_idx = FT_Get_Char_Index(font->face, cp);
+            FT_Get_Kerning(font->face, prev_idx, curr_idx, FT_KERNING_DEFAULT, &delta);
+            x += (delta.x >> 6) * scale;
         }
+        prev_cp = cp;
 
         const float xpos = x + gl->bearing_x * scale;
         const float ypos = y - (gl->height - gl->bearing_y) * scale;

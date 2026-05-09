@@ -75,7 +75,23 @@ static void sync_vp(SDL_Window *window, Camera *camera)
 
     shader_bind(&g_shader_sprite);
     shader_set_mat4(&g_shader_sprite, "projection", (float*)proj);
+}
 
+static void render_debug_panel()
+{
+    char buf[64];
+    SDL_snprintf(buf, sizeof(buf), "Zoom: %.4f", g_camera.zoom);
+    font_render_text(&g_font, &g_shader_text, buf, 20.0f, 220.0f, 1.0f, WHITE);
+    SDL_snprintf(buf, sizeof(buf), "DX: %.2f", g_player.dx);
+    font_render_text(&g_font, &g_shader_text, buf, 20.0f, 180.0f, 1.0f, WHITE);
+    SDL_snprintf(buf, sizeof(buf), "DY: %.2f", g_player.dy);
+    font_render_text(&g_font, &g_shader_text, buf, 20.0f, 140.0f, 1.0f, WHITE);
+    SDL_snprintf(buf, sizeof(buf), "Anim Frame: %d", g_player.anim_frame);
+    font_render_text(&g_font, &g_shader_text, buf, 20.0f, 100.0f, 1.0f, WHITE);
+    SDL_snprintf(buf, sizeof(buf), "Tile X: %.2f", g_player.cx + g_player.xr);
+    font_render_text(&g_font, &g_shader_text, buf, 20.0f, 60.0f, 1.0f, WHITE);
+    SDL_snprintf(buf, sizeof(buf), "Tile Y: %.2f", g_player.cy + g_player.yr);
+    font_render_text(&g_font, &g_shader_text, buf, 20.0f, 20.0f, 1.0f, WHITE);
 }
 
 typedef struct AppContext AppContext;
@@ -220,7 +236,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     if (event->type == SDL_EVENT_MOUSE_WHEEL) {
         g_camera.zoom_target *= (event->wheel.y > 0) ? 1.1f : 0.9f;
         float min_zoom = (float)g_camera.viewport_h / (MAP_ROWS * TILE_RENDER_SIZE);
-        min_zoom = roundf(min_zoom * 1000.0f) / 1000.0f;
         g_camera.zoom_target = SDL_clamp(g_camera.zoom_target, min_zoom, 2.5f);
         SDL_Log("Min zoom: %f, Camera zoom: %f", min_zoom, g_camera.zoom);
     }
@@ -275,18 +290,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     shader_set_mat4(&g_shader_sprite, "view", (float*)view);
     player_render(&g_player, &g_shader_sprite);
 
-    // debug panel
-    char debug_text[64];
-    SDL_snprintf(debug_text, sizeof(debug_text), "DX: %.2f", g_player.dx);
-    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 180.0f, 1.0f, WHITE);
-    SDL_snprintf(debug_text, sizeof(debug_text), "DY: %.2f", g_player.dy);
-    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 140.0f, 1.0f, WHITE);
-    SDL_snprintf(debug_text, sizeof(debug_text), "Anim Frame: %d", g_player.anim_frame);
-    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 100.0f, 1.0f, WHITE);
-    SDL_snprintf(debug_text, sizeof(debug_text), "Tile X: %.2f", g_player.cx + g_player.xr);
-    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 60.0f, 1.0f, WHITE);
-    SDL_snprintf(debug_text, sizeof(debug_text), "Tile Y: %.2f", g_player.cy + g_player.yr);
-    font_render_text(&g_font, &g_shader_text, debug_text, 20.0f, 20.0f, 1.0f, WHITE);
+    // debugging
+    render_debug_panel();
 
     SDL_GL_SwapWindow(app->window);
     return SDL_APP_CONTINUE;

@@ -47,7 +47,6 @@ static void tilemap_layer_upload(TilemapLayer *layer)
     glGenVertexArrays(1, &layer->vao);
     glGenBuffers(1, &layer->vbo);
     glGenBuffers(1, &layer->ebo);
-
     glBindVertexArray(layer->vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, layer->vbo);
@@ -82,11 +81,10 @@ bool tilemap_read(const char *path, int out[MAP_ROWS][MAP_COLS])
 
     int tmap[MAP_ROWS][MAP_COLS] = {0};
     int row = MAP_ROWS - 1;
-    int col = 0;
 
     char line[MAP_COLS * 4 + 2] = {0};
     while (fgets(line, sizeof(line), fp)) {
-        col = 0;
+        int col = 0;
         char *ctx = NULL;
         char *pc = SDL_strtok_r(line, ",", &ctx);
         while (pc) {

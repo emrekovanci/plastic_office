@@ -63,15 +63,13 @@ bool texture_create_font(Texture *out, int atlas_dim)
     unsigned int id;
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
-    {
-        unsigned char *zero = SDL_calloc(atlas_dim * atlas_dim, 1);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, atlas_dim, atlas_dim, 0, GL_RED, GL_UNSIGNED_BYTE, zero);
-        SDL_free(zero);
-    }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    unsigned char *zero = SDL_calloc(atlas_dim * atlas_dim, 1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, atlas_dim, atlas_dim, 0, GL_RED, GL_UNSIGNED_BYTE, zero);
+    SDL_free(zero);
     out->id = id;
     out->width = atlas_dim;
     out->height = atlas_dim;
