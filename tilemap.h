@@ -26,7 +26,7 @@ struct Tilemap {
     int collision[MAP_ROWS][MAP_COLS];
 };
 
-bool tilemap_read(const char *path, int out[MAP_ROWS][MAP_COLS]);
+bool tilemap_read(const char *path, int *map, int w, int h);
 bool tilemap_build(Tilemap *out);
 void tilemap_render(Tilemap *tilemap, Shader *shader);
 bool tilemap_has_collision(Tilemap *tilemap, int x, int y);

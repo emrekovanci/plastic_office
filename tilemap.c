@@ -69,34 +69,59 @@ static void tilemap_layer_upload(TilemapLayer *layer)
     glEnableVertexAttribArray(2);
 }
 
-// rows are loaded bottom-to-top so row 0 corresponds to the bottom of map, matching world space.
-// this avoids needing invert_y() on lookups
-bool tilemap_read(const char *path, int out[MAP_ROWS][MAP_COLS])
+bool tilemap_read(const char *path, int *map, int w, int h)
 {
-    FILE *fp = fopen(path, "r");
-    if (!fp) {
-        SDL_Log("Failed to open csv file: %s", path);
+    size_t sz = 0;
+    char *buf = (char*)SDL_LoadFile(path, &sz);
+
+    if (!buf) {
+        SDL_Log("Failed to load CSV file: %s", SDL_GetError());
         return false;
     }
 
-    int tmap[MAP_ROWS][MAP_COLS] = {0};
-    int row = MAP_ROWS - 1;
+    char *cur = buf;
+    bool err = false;
 
-    char line[MAP_COLS * 4 + 2] = {0};
-    while (fgets(line, sizeof(line), fp)) {
-        int col = 0;
-        char *ctx = NULL;
-        char *pc = SDL_strtok_r(line, ",", &ctx);
-        while (pc) {
-            tmap[row][col++] = SDL_atoi(pc);
-            pc = SDL_strtok_r(NULL, ",", &ctx);
+    // rows are loaded bottom-to-top so row 0 corresponds to the bottom of map, matching world space.
+    // this avoids needing invert_y() on lookups
+    for (int r = h - 1; r >= 0 && !err; --r) {
+        if (cur >= buf + sz) {
+            SDL_Log("Unexpected end of CSV file at row: %d", r);
+            err = true;
+            break;
         }
-        --row;
-    }
-    fclose(fp);
 
-    SDL_memcpy(out, tmap, sizeof(tmap));
-    return true;
+        char *eol = SDL_strchr(cur, '\n');
+        if (!eol) eol = buf + sz;
+        *eol = '\0';
+
+        char *cr = SDL_strchr(cur, '\r');
+        if (cr) *cr = '\0';
+
+        char *ctx = NULL;
+        char *tok = SDL_strtok_r(cur, ",", &ctx);
+
+        for (int c = 0; c < w; ++c) {
+            if (!tok) {
+                SDL_Log("Not enough columns at row %d in '%s'", r, path);
+                err = true;
+                break;
+            }
+
+            map[r * w + c] = SDL_atoi(tok);
+            tok = SDL_strtok_r(NULL, ",", &ctx);
+        }
+
+        if (tok && !err) {
+            SDL_Log("Too many columns at row %d in '%s'", r, path);
+            err = true;
+        }
+
+        cur = eol + 1;
+    }
+
+    SDL_free(buf);
+    return !err;
 }
 
 bool tilemap_build(Tilemap *out)
@@ -108,7 +133,7 @@ bool tilemap_build(Tilemap *out)
             return false;
 
         int map[MAP_ROWS][MAP_COLS] = {0};
-        if (!tilemap_read(layer_csvs[l], map))
+        if (!tilemap_read(layer_csvs[l], (int*)map, MAP_COLS, MAP_ROWS))
             return false;
 
         const int cols = layer->texture.width / TILE_SIZE;
@@ -153,7 +178,7 @@ bool tilemap_build(Tilemap *out)
         layer->visible = true;
     }
 
-    if (!tilemap_read(layer_collision, out->collision))
+    if (!tilemap_read(layer_collision, (int*)out->collision, MAP_COLS, MAP_ROWS))
         return false;
 
     // last layer is collision layer

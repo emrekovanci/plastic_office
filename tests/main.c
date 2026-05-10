@@ -3,6 +3,7 @@
 // test_tilemap.c
 extern void test_collision_solid_tile(void);
 extern void test_collision_empty_tile(void);
+extern void test_collision_any_zero_value_is_solid(void);
 extern void test_collision_any_positive_value_is_solid(void);
 extern void test_collision_cells_are_independent(void);
 extern void test_collision_out_of_bounds_negative(void);
@@ -11,6 +12,8 @@ extern void test_collision_boundary_coords_are_valid(void);
 extern void test_read_returns_false_for_missing_file(void);
 extern void test_read_loads_bottom_to_top(void);
 extern void test_read_negative_tile_ids(void);
+extern void test_read_returns_false_for_too_few_cols(void);
+extern void test_read_returns_false_for_too_many_cols(void);
 
 // test_input.c
 extern void test_key_down_when_curr_true(void);
@@ -51,6 +54,7 @@ int main(void)
     // test_tilemap
     RUN_TEST(test_collision_solid_tile);
     RUN_TEST(test_collision_empty_tile);
+    RUN_TEST(test_collision_any_zero_value_is_solid);
     RUN_TEST(test_collision_any_positive_value_is_solid);
     RUN_TEST(test_collision_cells_are_independent);
     RUN_TEST(test_collision_out_of_bounds_negative);
@@ -59,6 +63,8 @@ int main(void)
     RUN_TEST(test_read_returns_false_for_missing_file);
     RUN_TEST(test_read_loads_bottom_to_top);
     RUN_TEST(test_read_negative_tile_ids);
+    RUN_TEST(test_read_returns_false_for_too_few_cols);
+    RUN_TEST(test_read_returns_false_for_too_many_cols);
 
     // test_input
     RUN_TEST(test_key_down_when_curr_true);
