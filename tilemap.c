@@ -132,8 +132,8 @@ bool tilemap_build(Tilemap *out)
         if (!texture_load(layer_textures[l], &layer->texture))
             return false;
 
-        int map[MAP_ROWS][MAP_COLS] = {0};
-        if (!tilemap_read(layer_csvs[l], (int*)map, MAP_COLS, MAP_ROWS))
+        int map[MAP_COLS * MAP_ROWS] = {0};
+        if (!tilemap_read(layer_csvs[l], map, MAP_COLS, MAP_ROWS))
             return false;
 
         const int cols = layer->texture.width / TILE_SIZE;
@@ -143,7 +143,7 @@ bool tilemap_build(Tilemap *out)
 
         for (int y = 0; y < MAP_ROWS; ++y) {
             for (int x = 0; x < MAP_COLS; ++x) {
-                const int tile_id = map[y][x];
+                const int tile_id = map[TILE_INDEX(x, y)];
                 if (tile_id < 0)
                     continue;
 
@@ -178,7 +178,7 @@ bool tilemap_build(Tilemap *out)
         layer->visible = true;
     }
 
-    if (!tilemap_read(layer_collision, (int*)out->collision, MAP_COLS, MAP_ROWS))
+    if (!tilemap_read(layer_collision, out->collision, MAP_COLS, MAP_ROWS))
         return false;
 
     // last layer is collision layer
@@ -210,7 +210,7 @@ bool tilemap_has_collision(Tilemap *tilemap, int x, int y)
     if (x < 0 || x >= MAP_COLS || y < 0 || y >= MAP_ROWS)
         return false;
 
-    return tilemap->collision[y][x] >= 0;
+    return tilemap->collision[TILE_INDEX(x, y)] >= 0;
 }
 
 void tilemap_destroy(Tilemap *tilemap)

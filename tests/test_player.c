@@ -27,7 +27,7 @@ static void clear_tilemap_collision(Tilemap *t)
 {
     for (int y = 0; y < MAP_ROWS; ++y)
         for (int x = 0; x < MAP_COLS; ++x)
-            t->collision[y][x] = -1;
+            t->collision[TILE_INDEX(x, y)] = -1;
 }
 
 static Tilemap make_empty_tilemap(void)
@@ -45,7 +45,7 @@ static Tilemap make_tilemap_with_ground(void)
 
     // ground under player
     for (int x = 0; x < MAP_COLS; ++x)
-        t.collision[PLAYER_CY - 1][x] = 1;
+        t.collision[TILE_INDEX(x, PLAYER_CY - 1)] = 1;
 
     return t;
 }

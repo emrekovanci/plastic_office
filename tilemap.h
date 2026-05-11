@@ -9,6 +9,8 @@
 #define MAP_COLS   32
 #define MAP_ROWS   16
 
+#define TILE_INDEX(x, y) ((y) * MAP_COLS + (x))
+
 typedef struct TilemapLayer TilemapLayer;
 struct TilemapLayer {
     Vertex vertices[MAP_COLS * MAP_ROWS * 4];
@@ -23,7 +25,7 @@ struct TilemapLayer {
 typedef struct Tilemap Tilemap;
 struct Tilemap {
     TilemapLayer layers[MAP_LAYERS];
-    int collision[MAP_ROWS][MAP_COLS];
+    int collision[MAP_COLS * MAP_ROWS];
 };
 
 bool tilemap_read(const char *path, int *map, int w, int h);
