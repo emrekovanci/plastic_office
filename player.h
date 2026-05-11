@@ -38,6 +38,7 @@ struct Player {
     Texture texture_walk;
     Texture texture_run;
     Texture texture_jump;
+    Texture texture_hitbox;        // debugging
     int anim_frame;
     float anim_timer;
 

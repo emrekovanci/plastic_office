@@ -3,8 +3,8 @@
 #include "utils.h"
 
 // hitbox rendering for debugging purposes
-bool g_render_hitbox = false;
-Texture g_texture_hitbox = {0};
+static bool g_render_hitbox = false;
+
 static void player_render_hitbox(Player *player, Shader *shader)
 {
     const float width = PLAYER_HITBOX_HALF_WIDTH * 2.0f * TILE_RENDER_SIZE;
@@ -15,7 +15,7 @@ static void player_render_hitbox(Player *player, Shader *shader)
 
     sprite_render(
         &player->sprite,
-        &g_texture_hitbox,
+        &player->texture_hitbox,
         shader,
         player->render_xx, player->render_yy,
         width, height,
@@ -137,7 +137,7 @@ void player_init(Player *player)
     texture_load("assets/Gangsters_1/Walk.png", &player->texture_walk);
     texture_load("assets/Gangsters_1/Run.png", &player->texture_run);
     texture_load("assets/Gangsters_1/Jump.png", &player->texture_jump);
-    texture_create_solid(&g_texture_hitbox, 255, 0, 0, 100);
+    texture_create_solid(&player->texture_hitbox, (Color) { 255, 0, 0, 100 });
 
     player->anim_frame = 0;
     player->anim_timer = 0.0f;
@@ -167,7 +167,7 @@ void player_init(Player *player)
 
 void player_destroy(Player *player)
 {
-    texture_destroy(&g_texture_hitbox);
+    texture_destroy(&player->texture_hitbox);
     texture_destroy(&player->texture_jump);
     texture_destroy(&player->texture_run);
     texture_destroy(&player->texture_walk);
@@ -209,9 +209,9 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
         (target_dx > PLAYER_EPSILON && player->dx < -PLAYER_EPSILON) ||
         (target_dx < -PLAYER_EPSILON && player->dx > PLAYER_EPSILON);
 
-    const bool speed_changed = (player->is_running != running) && moving;
+    const bool speed_changed = ((player->is_running != running) && moving) || (player->is_moving != moving);
 
-    if (direction_changed) {
+    if (direction_changed || speed_changed) {
         player->anim_frame = 0;
         player->anim_timer = 0.0f;
     }

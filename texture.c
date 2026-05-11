@@ -12,7 +12,7 @@ bool texture_load(const char *path, Texture *out)
     unsigned char *data = stbi_load(path, &width, &height, &channels, 0);
     if (!data) {
         SDL_Log("Failed to load texture: '%s': %s -- using fallback texture", path, stbi_failure_reason());
-        return texture_create_solid(out, 255, 0, 255, 255);
+        return texture_create_solid(out, MAGENTA);
     }
 
     const GLenum format = (channels == 4) ? GL_RGBA : GL_RGB;
@@ -41,9 +41,8 @@ void texture_destroy(Texture *tex)
     glDeleteTextures(1, &tex->id);
 }
 
-bool texture_create_solid(Texture *out, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+bool texture_create_solid(Texture *out, Color color)
 {
-    unsigned char pixels[] = { r, g, b, a };
     unsigned int id;
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
@@ -51,10 +50,12 @@ bool texture_create_solid(Texture *out, unsigned char r, unsigned char g, unsign
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &color);
+
     out->id = id;
     out->width = 1;
     out->height = 1;
+
     return true;
 }
 
@@ -70,9 +71,11 @@ bool texture_create_font(Texture *out, int atlas_dim)
     unsigned char *zero = SDL_calloc(atlas_dim * atlas_dim, 1);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, atlas_dim, atlas_dim, 0, GL_RED, GL_UNSIGNED_BYTE, zero);
     SDL_free(zero);
+
     out->id = id;
     out->width = atlas_dim;
     out->height = atlas_dim;
+
     return true;
 }
 
