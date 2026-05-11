@@ -3,7 +3,6 @@
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
 #include <cglm/cglm.h>
-#include <stdio.h>
 #include "constants.h"
 
 static const char *layer_csvs[MAP_LAYERS] = {
