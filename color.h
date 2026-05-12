@@ -1,9 +1,13 @@
 #ifndef COLOR_H
 #define COLOR_H
 
-#include <SDL3/SDL_pixels.h>
-
-typedef SDL_Color Color;
+typedef struct Color Color;
+struct Color {
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+    unsigned char a;
+};
 
 #define WHITE   (Color){ 255, 255, 255, 255 }
 #define BLACK   (Color){ 0,   0,   0,   255 }

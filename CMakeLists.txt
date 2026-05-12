@@ -22,7 +22,7 @@ add_library(game_lib STATIC
   color.h
   constants.h
   vertex.h
-  direction.h direction.c
+  direction.h
   utils.h utils.c
   shader.h shader.c
   texture.h texture.c
@@ -44,10 +44,10 @@ target_link_libraries(app PRIVATE game_lib)
 add_executable(test_font tests/renderer/test_font.c)
 target_link_libraries(test_font PRIVATE game_lib)
 
-if(MSVC)
-    target_compile_options(app PRIVATE /fsanitize=address)
-    target_link_options(app PRIVATE /fsanitize=address)
-endif()
+# if(MSVC)
+#     target_compile_options(app PRIVATE /fsanitize=address)
+#     target_link_options(app PRIVATE /fsanitize=address)
+# endif()
 
 # if(MSVC)
 #   target_compile_options(app PRIVATE /FA)

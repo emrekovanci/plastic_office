@@ -28,10 +28,16 @@ void sprite_init(Sprite *sprite)
     glBindVertexArray(sprite->vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, sprite->vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(sprite->vertices), sprite->vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,
+                 sizeof(sprite->vertices),
+                 sprite->vertices,
+                 GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sprite->ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(sprite->indices), sprite->indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 sizeof(sprite->indices),
+                 sprite->indices,
+                 GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(0);

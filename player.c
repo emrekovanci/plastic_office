@@ -23,11 +23,6 @@ static void player_render_hitbox(Player *player, Shader *shader)
         0.5f, 0.0f);
 }
 
-static float analog_val2(float left, float right)
-{
-    return right - left;
-}
-
 static bool collides_x(Tilemap *tilemap, int tile_x, int y_min, int y_max)
 {
     for (int y = y_min; y <= y_max; ++y)
@@ -137,7 +132,7 @@ void player_init(Player *player)
     texture_load("assets/Gangsters_1/Walk.png", &player->texture_walk);
     texture_load("assets/Gangsters_1/Run.png", &player->texture_run);
     texture_load("assets/Gangsters_1/Jump.png", &player->texture_jump);
-    texture_create_solid(&player->texture_hitbox, (Color) { 255, 0, 0, 100 });
+    texture_create_solid(&player->texture_hitbox, (Color){ 255, 0, 0, 100 });
 
     player->anim_frame = 0;
     player->anim_timer = 0.0f;
@@ -187,7 +182,7 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
     const bool right_down = input_key_down(input, SDL_SCANCODE_D) || input_key_down(input, SDL_SCANCODE_RIGHT);
     const bool shift_down = input_key_down(input, SDL_SCANCODE_LSHIFT) || input_key_down(input, SDL_SCANCODE_RSHIFT);
 
-    const float raw_axis = analog_val2(left_down, right_down * 2.0f);
+    const float raw_axis = right_down * 2.0f - left_down;
     float axis = signf(raw_axis);
 
     if (axis != 0.0f) {
@@ -304,7 +299,7 @@ void player_update(Player *player, float dt, Input *input, float alpha, Tilemap 
         if (player->dy > 0.0f) {
             float t = 1.0f - (player->dy / PLAYER_JUMP_FORCE);
             t = SDL_clamp(t, 0.0f, 1.0f);
-            t = SDL_sqrtf(t);
+            t = sqrtf(t);
             const int frame = (int)(t * 5.0f);
             player->anim_frame = (frame > 4) ? 4 : frame;
         } else {
