@@ -1,7 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "direction.h"
+#include "constants.h"
 #include "texture.h"
 #include "shader.h"
 #include "input.h"

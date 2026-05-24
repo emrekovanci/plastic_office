@@ -7,4 +7,9 @@
 
 #define FIXED_TIMESTEP       (1.0f / 30.0f)
 
+typedef enum {
+    DIRECTION_E,
+    DIRECTION_W
+} Direction;
+
 #endif

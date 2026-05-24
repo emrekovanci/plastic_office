@@ -22,7 +22,6 @@ add_library(game_lib STATIC
   color.h
   constants.h
   vertex.h
-  direction.h
   utils.h utils.c
   shader.h shader.c
   texture.h texture.c
