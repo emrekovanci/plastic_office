@@ -31,11 +31,13 @@ add_library(game_lib STATIC
   input.h input.c
   sprite.h sprite.c
   font.h font.c
+  window.h window.c
 )
 target_link_libraries(game_lib PUBLIC glad SDL3::SDL3 cglm_headers freetype)
 target_include_directories(game_lib PUBLIC . vendor/stb)
 
 # game executable
+# should be like this for production build: add_executable(app WIN32 main.c)
 add_executable(app main.c)
 target_link_libraries(app PRIVATE game_lib)
 

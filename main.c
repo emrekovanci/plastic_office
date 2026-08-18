@@ -4,6 +4,7 @@
 #include <SDL3/SDL_main.h>
 #include <cglm/cglm.h>
 
+#include "window.h"
 #include "camera.h"
 #include "shader.h"
 #include "tilemap.h"
@@ -12,9 +13,6 @@
 #include "sprite.h"
 #include "constants.h"
 #include "font.h"
-
-#define WINDOW_WIDTH  1920
-#define WINDOW_HEIGHT 1080
 
 static void set_parallax_view(Shader *shader, Camera *camera, float factor)
 {
@@ -58,9 +56,9 @@ Sprite g_bg2_spr;
 Texture g_bg1_tex;
 Sprite g_bg1_spr;
 
-static void sync_vp(SDL_Window *window, Camera *camera)
+static void sync_vp(GameWindow *game_window, Camera *camera)
 {
-    SDL_GetWindowSizeInPixels(window, &camera->viewport_w, &camera->viewport_h);
+    window_get_pixel_size(game_window, &camera->viewport_w, &camera->viewport_h);
 
     glViewport(camera->viewport_x, camera->viewport_y, camera->viewport_w, camera->viewport_h);
 
@@ -100,8 +98,7 @@ struct AppContext {
     float timescale;
     Uint64 last_tick;
     double accumulator;
-    SDL_Window *window;
-    SDL_GLContext gl_context;
+    GameWindow *window;
 };
 
 static void toggle_wireframe(AppContext *app)
@@ -136,35 +133,14 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     *appstate = app;
     app->timescale = 1.0f;
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-    SDL_Window *window = SDL_CreateWindow("SSS", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
-    if (!window) {
-        SDL_Log("Couldn't create window: %s", SDL_GetError());
+    app->window = SDL_calloc(1, sizeof(*app->window));
+    if (!app->window) {
+        SDL_Log("Failed to allocate memory for GameWindow: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
-    app->window = window;
-
-    SDL_GLContext gl_context = SDL_GL_CreateContext(app->window);
-    if (!gl_context) {
-        SDL_Log("Failed to create gl context: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
-    app->gl_context = gl_context;
-
-    if (!SDL_GL_MakeCurrent(app->window, app->gl_context)) {
-        SDL_Log("Failed to set up OpenGL context into window: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
-
-    if (!SDL_GL_SetSwapInterval(1))
-        SDL_Log("Failed to activate VSync: %s", SDL_GetError());
-
-    if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-        SDL_Log("Failed to load glad: %s", SDL_GetError());
+    
+    if (!window_init(app->window)) {
+        SDL_Log("Failed to create game window!");
         return SDL_APP_FAILURE;
     }
 
@@ -220,7 +196,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     if (event->type == SDL_EVENT_QUIT)
         return SDL_APP_SUCCESS;
 
-    if (event->type == SDL_EVENT_KEY_DOWN) {
+    if (event->type == SDL_EVENT_KEY_DOWN && !event->key.repeat) {
         switch (event->key.key) {
             case SDLK_F1: toggle_wireframe(app); break;
             case SDLK_F2: toggle_collision_visibility(); break;
@@ -295,7 +271,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     // debugging
     render_debug_panel();
 
-    SDL_GL_SwapWindow(app->window);
+    window_swap(app->window);
     return SDL_APP_CONTINUE;
 }
 
@@ -318,7 +294,7 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
     font_destroy(&g_font);
     shader_destroy(&g_shader_text);
 
-    SDL_GL_DestroyContext(app->gl_context);
-    SDL_DestroyWindow(app->window);
+    window_destroy(app->window);
+    SDL_free(app->window);
     SDL_free(app);
 }
