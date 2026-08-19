@@ -35,6 +35,11 @@ bool window_init(GameWindow *game_window)
         return false;
     }
 
+    SDL_Log("OpenGL Version: %s", glGetString(GL_VERSION));
+    SDL_Log("GLSL Version: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+    SDL_Log("Renderer: %s", glGetString(GL_RENDERER));
+    SDL_Log("Vendor: %s", glGetString(GL_VENDOR));
+
     return true;
 }
 

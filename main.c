@@ -146,11 +146,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     app->last_tick = SDL_GetTicks();
 
-    SDL_Log("OpenGL Version: %s", glGetString(GL_VERSION));
-    SDL_Log("GLSL Version: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
-    SDL_Log("Renderer: %s", glGetString(GL_RENDERER));
-    SDL_Log("Vendor: %s", glGetString(GL_VENDOR));
-
     camera_init(&g_camera);
 
     font_load(&g_font, "assets/fonts/NotoSans-Medium.ttf", 32, 512);
