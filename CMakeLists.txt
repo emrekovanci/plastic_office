@@ -10,6 +10,19 @@ project(
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 
+# address sanitizer
+option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
+if(ENABLE_ASAN)
+  if(MSVC)
+    add_compile_options(/fsanitize=address /Zi)
+    add_link_options(/INCREMENTAL:NO)
+  else()
+    add_compile_options(-fsanitize=address -g)
+    add_link_options(-fsanitize=address)
+  endif()
+endif()
+
+# dependencies
 add_subdirectory(vendor/glad EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/cglm EXCLUDE_FROM_ALL)
@@ -44,11 +57,6 @@ target_link_libraries(app PRIVATE game_lib)
 # font tests
 add_executable(test_font tests/renderer/test_font.c)
 target_link_libraries(test_font PRIVATE game_lib)
-
-# if(MSVC)
-#     target_compile_options(app PRIVATE /fsanitize=address)
-#     target_link_options(app PRIVATE /fsanitize=address)
-# endif()
 
 # if(MSVC)
 #   target_compile_options(app PRIVATE /FA)
