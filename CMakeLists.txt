@@ -22,6 +22,14 @@ if(ENABLE_ASAN)
   endif()
 endif()
 
+# asm output
+option(ENABLE_ASM_OUTPUT "Enable Asm Output" OFF)
+if(ENABLE_ASM_OUTPUT)
+  if(MSVC)
+    add_compile_options(/FA)
+  endif()
+endif()
+
 # dependencies
 add_subdirectory(vendor/glad EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
@@ -58,10 +66,7 @@ target_link_libraries(app PRIVATE game_lib)
 add_executable(test_font tests/renderer/test_font.c)
 target_link_libraries(test_font PRIVATE game_lib)
 
-# if(MSVC)
-#   target_compile_options(app PRIVATE /FA)
-# endif()
-
+# copy assets
 add_custom_command(
   TARGET app POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:app>/assets
