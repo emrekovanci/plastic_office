@@ -75,21 +75,24 @@ static void sync_vp(GameWindow *game_window, Camera *camera)
     shader_set_mat4(&g_shader_sprite, "projection", (float*)proj);
 }
 
-static void render_debug_panel()
+static void debug_line(float y, const char* fmt, ...)
 {
     char buf[64];
-    SDL_snprintf(buf, sizeof(buf), "Zoom: %.4f", g_camera.zoom);
-    font_render_text(&g_font, &g_shader_text, buf, 20.0f, 220.0f, 1.0f, WHITE);
-    SDL_snprintf(buf, sizeof(buf), "DX: %.2f", g_player.dx);
-    font_render_text(&g_font, &g_shader_text, buf, 20.0f, 180.0f, 1.0f, WHITE);
-    SDL_snprintf(buf, sizeof(buf), "DY: %.2f", g_player.dy);
-    font_render_text(&g_font, &g_shader_text, buf, 20.0f, 140.0f, 1.0f, WHITE);
-    SDL_snprintf(buf, sizeof(buf), "Anim Frame: %d", g_player.anim_frame);
-    font_render_text(&g_font, &g_shader_text, buf, 20.0f, 100.0f, 1.0f, WHITE);
-    SDL_snprintf(buf, sizeof(buf), "Tile X: %.2f", g_player.cx + g_player.xr);
-    font_render_text(&g_font, &g_shader_text, buf, 20.0f, 60.0f, 1.0f, WHITE);
-    SDL_snprintf(buf, sizeof(buf), "Tile Y: %.2f", g_player.cy + g_player.yr);
-    font_render_text(&g_font, &g_shader_text, buf, 20.0f, 20.0f, 1.0f, WHITE);
+    va_list args;
+    va_start(args, fmt);
+    SDL_vsnprintf(buf, sizeof(buf), fmt, args);
+    va_end(args);
+    font_render_text(&g_font, &g_shader_text, buf, 20.0f, y, 1.0f, WHITE);
+}
+
+static void render_debug_panel()
+{
+    debug_line(220.0f, "Zoom: %.4f", g_camera.zoom);
+    debug_line(180.0f, "DX: %.2f", g_player.dx);
+    debug_line(140.0f, "DY: %.2f", g_player.dy);
+    debug_line(100.0f, "Anim Frame: %d", g_player.anim_frame);
+    debug_line(60.0f, "Tile X: %.2f", g_player.cx + g_player.xr);
+    debug_line(20.0f, "Tile Y: %.2f", g_player.cy + g_player.yr);
 }
 
 typedef struct AppContext AppContext;
