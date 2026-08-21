@@ -5,11 +5,18 @@
 #include "texture.h"
 #include "shader.h"
 
-#define MAP_LAYERS 4
-#define MAP_COLS   32
-#define MAP_ROWS   16
+#define MAP_LAYERS            4
+#define MAP_COLS              32
+#define MAP_ROWS              16
+#define COLLISION_LAYER_INDEX (MAP_LAYERS - 1)
 
 #define TILE_INDEX(x, y) ((y) * MAP_COLS + (x))
+
+typedef struct TilemapLayerDef TilemapLayerDef;
+struct TilemapLayerDef {
+    const char *csv;
+    const char *texture;
+};
 
 typedef struct TilemapLayer TilemapLayer;
 struct TilemapLayer {

@@ -5,21 +5,12 @@
 #include <cglm/cglm.h>
 #include "constants.h"
 
-static const char *layer_csvs[MAP_LAYERS] = {
-    "assets/side_Layer_1_Ground.csv",
-    "assets/side_Layer_2_Buildings.csv",
-    "assets/side_Layer_3_Decos.csv",
-    "assets/side_Layer_4_Collision.csv"
+static const TilemapLayerDef LAYER_DEFS[MAP_LAYERS] = {
+    { "assets/side_Layer_1_Ground.csv",    "assets/Ground.png" },
+    { "assets/side_Layer_2_Buildings.csv", "assets/Buildings.png" },
+    { "assets/side_Layer_3_Decos.csv",     "assets/Decoration.png" },
+    { "assets/side_Layer_4_Collision.csv", "assets/Sprite_Collision.png" },
 };
-
-static const char *layer_textures[MAP_LAYERS] = {
-    "assets/Ground.png",
-    "assets/Buildings.png",
-    "assets/Decoration.png",
-    "assets/Sprite_Collision.png"
-};
-
-static const char *layer_collision = "assets/side_Layer_4_Collision.csv";
 
 static void tile_uv(int rows, int cols, int tile_id, float *u0, float *v0, float *u1, float *v1)
 {
@@ -128,11 +119,11 @@ bool tilemap_build(Tilemap *out)
     for (int l = 0; l < MAP_LAYERS; ++l) {
         TilemapLayer *layer = &out->layers[l];
 
-        if (!texture_load(layer_textures[l], &layer->texture))
+        if (!texture_load(LAYER_DEFS[l].texture, &layer->texture))
             return false;
 
         int map[MAP_COLS * MAP_ROWS] = {0};
-        if (!tilemap_read(layer_csvs[l], map, MAP_COLS, MAP_ROWS))
+        if (!tilemap_read(LAYER_DEFS[l].csv, map, MAP_COLS, MAP_ROWS))
             return false;
 
         const int cols = layer->texture.width / TILE_SIZE;
@@ -177,11 +168,10 @@ bool tilemap_build(Tilemap *out)
         layer->visible = true;
     }
 
-    if (!tilemap_read(layer_collision, out->collision, MAP_COLS, MAP_ROWS))
+    if (!tilemap_read(LAYER_DEFS[COLLISION_LAYER_INDEX].csv, out->collision, MAP_COLS, MAP_ROWS))
         return false;
 
-    // last layer is collision layer
-    out->layers[MAP_LAYERS - 1].visible = false;
+    out->layers[COLLISION_LAYER_INDEX].visible = false;
     return true;
 }
 
