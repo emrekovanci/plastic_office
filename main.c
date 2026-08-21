@@ -115,7 +115,7 @@ static void toggle_wireframe(AppContext *app)
 
 static void toggle_collision_visibility()
 {
-    TilemapLayer *collision_layer = &g_tilemap.layers[MAP_LAYERS - 1];
+    TilemapLayer *collision_layer = &g_tilemap.layers[COLLISION_LAYER_INDEX];
     collision_layer->visible = !collision_layer->visible;
 }
 
