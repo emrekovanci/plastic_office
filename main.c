@@ -180,6 +180,10 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     sync_vp(app->window, &g_camera);
 
+    // initial zoom
+    g_camera.zoom = SDL_clamp(g_camera.zoom, camera_min_zoom(&g_camera, MAP_ROWS), camera_max_zoom(&g_camera));
+    g_camera.zoom_target = g_camera.zoom;
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
