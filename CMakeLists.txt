@@ -53,6 +53,7 @@ add_library(game_lib STATIC
   sprite.h sprite.c
   font.h font.c
   window.h window.c
+  renderer.h renderer.c
 )
 target_link_libraries(game_lib PUBLIC glad SDL3::SDL3 cglm_headers freetype)
 target_include_directories(game_lib PUBLIC . vendor/stb)

@@ -3,6 +3,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <cglm/cglm.h>
+#include <stdarg.h>
 
 #include "window.h"
 #include "camera.h"
@@ -13,28 +14,7 @@
 #include "sprite.h"
 #include "constants.h"
 #include "font.h"
-
-static void set_parallax_view(Shader *shader, Camera *camera, float factor)
-{
-    mat4 view;
-    glm_mat4_identity(view);
-
-    vec3 translation = { -camera->x * factor, 0.0f, 0.0f };
-    glm_translate(view, translation);
-    shader_set_mat4(shader, "view", (float*)view);
-}
-
-static void render_background(Sprite *sprite, Texture *texture, Shader *shader, Camera *camera, float factor)
-{
-    set_parallax_view(shader, camera, factor);
-    sprite_render(sprite,
-                  texture,
-                  shader,
-                  0.0f, 0.0f,
-                  (float)texture->width * TILE_SCALE, (float)texture->height * TILE_SCALE,
-                  0.0f,
-                  0.0f, 0.0f);
-}
+#include "renderer.h"
 
 // general
 Shader g_shader_sprite;
@@ -97,7 +77,7 @@ static void render_debug_panel()
 
 typedef struct AppContext AppContext;
 struct AppContext {
-    bool wireframe;
+    RenderState render_state;
     float timescale;
     Uint64 last_tick;
     double accumulator;
@@ -106,11 +86,7 @@ struct AppContext {
 
 static void toggle_wireframe(AppContext *app)
 {
-    app->wireframe = !app->wireframe;
-    if (app->wireframe)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    else
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    renderer_set_wireframe(&app->render_state, !app->render_state.wireframe_enabled);
 }
 
 static void toggle_collision_visibility()
@@ -184,8 +160,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     g_camera.zoom = SDL_clamp(g_camera.zoom, camera_min_zoom(&g_camera, MAP_ROWS), camera_max_zoom(&g_camera));
     g_camera.zoom_target = g_camera.zoom;
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // renderer
+    renderer_init(&app->render_state);
 
     SDL_Log("Viewport size: W: %d, H: %d", g_camera.viewport_w, g_camera.viewport_h);
     return SDL_APP_CONTINUE;
@@ -251,14 +227,13 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     camera_update(&g_camera, dt, g_player.render_xx);
 
     // clear
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    renderer_clear(0.0f, 0.0f, 0.0f, 1.0f);
 
     // render background
     shader_bind(&g_shader_default);
-    render_background(&g_bg_sky_spr, &g_bg_sky_tex, &g_shader_default, &g_camera, 0.0f);
-    render_background(&g_bg1_spr, &g_bg1_tex, &g_shader_default, &g_camera, 0.01f);
-    render_background(&g_bg2_spr, &g_bg2_tex, &g_shader_default, &g_camera, 0.2f);
+    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.0f, &g_bg_sky_spr, &g_bg_sky_tex);
+    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.01f, &g_bg1_spr, &g_bg1_tex);
+    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.2f, &g_bg2_spr, &g_bg2_tex);
 
     // render foreground
     mat4 view;
