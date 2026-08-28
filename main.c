@@ -38,21 +38,15 @@ Sprite g_bg1_spr;
 
 static void sync_vp(GameWindow *game_window, Camera *camera)
 {
-    window_get_pixel_size(game_window, &camera->viewport_w, &camera->viewport_h);
+    int w, h;
+    window_get_pixel_size(game_window, &w, &h);
 
-    glViewport(camera->viewport_x, camera->viewport_y, camera->viewport_w, camera->viewport_h);
-
-    mat4 proj;
-    camera_proj(camera, proj);
-
-    shader_bind(&g_shader_text);
-    shader_set_mat4(&g_shader_text, "projection", (float*)proj);
-    
-    shader_bind(&g_shader_default);
-    shader_set_mat4(&g_shader_default, "projection", (float*)proj);
-
-    shader_bind(&g_shader_sprite);
-    shader_set_mat4(&g_shader_sprite, "projection", (float*)proj);
+    Shader *shaders[] = {
+        &g_shader_text,
+        &g_shader_default,
+        &g_shader_sprite
+    };
+    renderer_viewport_resize(w, h, &g_camera, shaders, 3);
 }
 
 static void debug_line(float y, const char* fmt, ...)
@@ -83,11 +77,6 @@ struct AppContext {
     double accumulator;
     GameWindow *window;
 };
-
-static void toggle_wireframe(AppContext *app)
-{
-    renderer_set_wireframe(&app->render_state, !app->render_state.wireframe_enabled);
-}
 
 static void toggle_collision_visibility()
 {
@@ -176,7 +165,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
     if (event->type == SDL_EVENT_KEY_DOWN && !event->key.repeat) {
         switch (event->key.key) {
-            case SDLK_F1: toggle_wireframe(app); break;
+            case SDLK_F1: renderer_set_wireframe(&app->render_state, !app->render_state.wireframe_enabled); break;
             case SDLK_F2: toggle_collision_visibility(); break;
             case SDLK_1: app->timescale = 1.0f; break;
             case SDLK_2: app->timescale = 0.5f; break;

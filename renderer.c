@@ -39,8 +39,24 @@ void renderer_clear(float r, float g, float b, float a)
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
+void renderer_viewport_resize(int width, int height, Camera *camera, Shader *shaders[], int shader_count)
+{
+    camera->viewport_w = width;
+    camera->viewport_h = height;
+    glViewport(camera->viewport_x, camera->viewport_y, camera->viewport_w, camera->viewport_h);
+
+    mat4 proj;
+    camera_proj(camera, proj);
+
+    for (int i = 0; i < shader_count; ++i) {
+        shader_bind(shaders[i]);
+        shader_set_mat4(shaders[i], "projection", (float*)proj);
+    }
+}
+
 void renderer_draw_parallax_layer(Shader *shader, Camera *camera, float factor, Sprite *sprite, Texture *texture)
 {
+    // build a standalone view matrix for this layer (independent of the camera's actual view matrix)
     mat4 view;
     glm_mat4_identity(view);
     vec3 translation = { -camera->x * factor, 0.0f, 0.0f };

@@ -17,6 +17,9 @@ void renderer_init(RenderState *rs);
 void renderer_set_blend(RenderState *rs, bool enabled);
 void renderer_set_wireframe(RenderState *rs, bool enabled);
 void renderer_clear(float r, float g, float b, float a);
+
+void renderer_viewport_resize(int width, int height, Camera *camera, Shader *shaders[], int shader_count);
+
 void renderer_draw_parallax_layer(Shader *shader, Camera *camera, float factor, Sprite *sprite, Texture *texture);
 
 #endif
