@@ -208,12 +208,12 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     }
 
     if (event->type == SDL_EVENT_MOUSE_WHEEL) {
-        g_camera.zoom_target *= (event->wheel.y > 0) ? 1.1f : 0.9f;
-        float min_zoom = (float)g_camera.viewport_h / (MAP_ROWS * TILE_RENDER_SIZE);
-        const float MIN_VISIBLE_TILES = 6.0f;
-        float max_zoom = (float)g_camera.viewport_h / (MIN_VISIBLE_TILES * TILE_RENDER_SIZE);
-        g_camera.zoom_target = SDL_clamp(g_camera.zoom_target, min_zoom, max_zoom);
-        SDL_Log("Min zoom: %f, Camera zoom: %f", min_zoom, g_camera.zoom);
+        float zoom_factor = (event->wheel.y > 0) ? CAMERA_ZOOM_STEP : (1.0f / CAMERA_ZOOM_STEP);
+        g_camera.zoom_target = SDL_clamp(
+            g_camera.zoom_target * zoom_factor,
+            camera_min_zoom(&g_camera, MAP_ROWS),
+            camera_max_zoom(&g_camera)
+            );
     }
 
     if (event->type == SDL_EVENT_WINDOW_RESIZED) {

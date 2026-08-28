@@ -1,4 +1,5 @@
 #include "camera.h"
+#include "constants.h"
 #include "utils.h"
 
 void camera_init(Camera *camera)
@@ -35,4 +36,15 @@ void camera_proj(Camera *camera, mat4 out)
         0, (float)camera->viewport_w,
         0, (float)camera->viewport_h,
         -1, 1, out);
+}
+
+float camera_min_zoom(const Camera *camera, int map_rows)
+{
+    return (float)camera->viewport_h / (map_rows * TILE_RENDER_SIZE);
+}
+
+float camera_max_zoom(const Camera *camera)
+{
+    const float MIN_VISIBLE_TILES = 6.0f;
+    return (float)camera->viewport_h / (MIN_VISIBLE_TILES * TILE_RENDER_SIZE);
 }
