@@ -58,8 +58,12 @@ target_link_libraries(game_lib PUBLIC glad SDL3::SDL3 cglm_headers freetype)
 target_include_directories(game_lib PUBLIC . vendor/stb)
 
 # game executable
-# should be like this for production build: add_executable(app WIN32 main.c)
-add_executable(app main.c)
+option(BUILD_CONSOLE "Build with console window (useful for debugging)" ON)
+if(WIN32 AND NOT BUILD_CONSOLE)
+  add_executable(app WIN32 main.c)
+else()
+  add_executable(app main.c)
+endif()
 target_link_libraries(app PRIVATE game_lib)
 
 # font tests
