@@ -224,12 +224,13 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.01f, &g_bg1_spr, &g_bg1_tex);
     renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.2f, &g_bg2_spr, &g_bg2_tex);
 
-    // render foreground
+    // render tilemap
     mat4 view;
     camera_view(&g_camera, view);
     shader_set_mat4(&g_shader_default, "view", (float*)view);
     tilemap_render(&g_tilemap, &g_shader_default);
 
+    // render player
     shader_bind(&g_shader_sprite);
     shader_set_mat4(&g_shader_sprite, "view", (float*)view);
     player_render(&g_player, &g_shader_sprite);

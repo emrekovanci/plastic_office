@@ -3,7 +3,8 @@
 
 #include <cglm/cglm.h>
 
-#define CAMERA_ZOOM_STEP 1.1f
+#define CAMERA_ZOOM_STEP         1.1f
+#define CAMERA_MIN_VISIBLE_TILES 6.0f
 
 typedef struct Camera Camera;
 struct Camera {
@@ -18,12 +19,12 @@ struct Camera {
     float zoom_target;
 };
 
-void camera_init(Camera *camera);
-void camera_update(Camera *camera, float dt, float target_x);
-void camera_view(Camera *camera, mat4 out);
-void camera_proj(Camera *camera, mat4 out);
+void camera_init(Camera *cam);
+void camera_update(Camera *cam, float dt, float target_x);
+void camera_view(Camera *cam, mat4 out);
+void camera_proj(Camera *cam, mat4 out);
 
-float camera_min_zoom(const Camera *camera, int map_rows);
-float camera_max_zoom(const Camera *camera);
+float camera_min_zoom(const Camera *cam, int map_rows);
+float camera_max_zoom(const Camera *cam);
 
 #endif
