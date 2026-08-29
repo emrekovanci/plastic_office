@@ -177,12 +177,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     }
 
     if (event->type == SDL_EVENT_MOUSE_WHEEL) {
-        float zoom_factor = (event->wheel.y > 0) ? CAMERA_ZOOM_STEP : (1.0f / CAMERA_ZOOM_STEP);
-        g_camera.zoom_target = SDL_clamp(
-            g_camera.zoom_target * zoom_factor,
-            camera_min_zoom(&g_camera, MAP_ROWS),
-            camera_max_zoom(&g_camera)
-            );
+        camera_set_zoom(&g_camera, event->wheel.y);
     }
 
     if (event->type == SDL_EVENT_WINDOW_RESIZED) {

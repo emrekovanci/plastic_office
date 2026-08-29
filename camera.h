@@ -19,12 +19,13 @@ struct Camera {
     float zoom_target;
 };
 
-void camera_init(Camera *cam);
-void camera_update(Camera *cam, float dt, float target_x);
-void camera_view(Camera *cam, mat4 out);
-void camera_proj(Camera *cam, mat4 out);
+void camera_init(Camera *c);
+void camera_update(Camera *c, float dt, float target_x);
+void camera_view(Camera *c, mat4 out);
+void camera_proj(Camera *c, mat4 out);
 
-float camera_min_zoom(const Camera *cam, int map_rows);
-float camera_max_zoom(const Camera *cam);
+void camera_set_zoom(Camera *c, float dir);
+float camera_min_zoom(const Camera *c, int map_rows);
+float camera_max_zoom(const Camera *c);
 
 #endif

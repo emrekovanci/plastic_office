@@ -4,11 +4,7 @@
 #include "vertex.h"
 #include "texture.h"
 #include "shader.h"
-
-#define MAP_LAYERS            4
-#define MAP_COLS              32
-#define MAP_ROWS              16
-#define COLLISION_LAYER_INDEX (MAP_LAYERS - 1)
+#include "constants.h"
 
 #define TILE_INDEX(x, y) ((y) * MAP_COLS + (x))
 
