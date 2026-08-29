@@ -8,8 +8,6 @@
 
 typedef struct Camera Camera;
 struct Camera {
-    int viewport_x;
-    int viewport_y;
     int viewport_w;
     int viewport_h;
 

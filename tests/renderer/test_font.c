@@ -20,7 +20,7 @@ static void sync_vp(SDL_Window *window, Camera *camera)
 {
     SDL_GetWindowSizeInPixels(window, &camera->viewport_w, &camera->viewport_h);
 
-    glViewport(camera->viewport_x, camera->viewport_y, camera->viewport_w, camera->viewport_h);
+    glViewport(0, 0, camera->viewport_w, camera->viewport_h);
 
     mat4 proj;
     camera_proj(camera, proj);
