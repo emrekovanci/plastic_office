@@ -5,7 +5,6 @@
 
 void renderer_init(RenderState *rs)
 {
-    rs->blend_enabled = true;
     rs->wireframe_enabled = false;
 
     glEnable(GL_BLEND);

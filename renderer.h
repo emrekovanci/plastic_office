@@ -9,7 +9,6 @@
 
 typedef struct RenderState RenderState;
 struct RenderState {
-    bool blend_enabled;
     bool wireframe_enabled;
 };
 
