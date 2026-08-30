@@ -12,25 +12,16 @@ void renderer_init(RenderState *rs)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void renderer_set_blend(RenderState *rs, bool enabled)
+void renderer_toggle_wireframe(RenderState *rs)
 {
-    if (rs->blend_enabled == enabled)
+    if (rs->wireframe_enabled) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        rs->wireframe_enabled = false;
         return;
+    }
 
-    rs->blend_enabled = enabled;
-    if (enabled)
-        glEnable(GL_BLEND);
-    else
-        glDisable(GL_BLEND);
-}
-
-void renderer_set_wireframe(RenderState *rs, bool enabled)
-{
-    if (rs->wireframe_enabled == enabled)
-        return;
-
-    rs->wireframe_enabled = enabled;
-    glPolygonMode(GL_FRONT_AND_BACK, enabled ? GL_LINE : GL_FILL);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    rs->wireframe_enabled = true;
 }
 
 void renderer_clear(float r, float g, float b, float a)

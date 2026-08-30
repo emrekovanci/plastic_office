@@ -78,7 +78,7 @@ struct AppContext {
     GameWindow *window;
 };
 
-static void toggle_collision_visibility()
+static void collision_toggle_debugging()
 {
     TilemapLayer *collision_layer = &g_tilemap.layers[COLLISION_LAYER_INDEX];
     collision_layer->visible = !collision_layer->visible;
@@ -165,8 +165,8 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
     if (event->type == SDL_EVENT_KEY_DOWN && !event->key.repeat) {
         switch (event->key.key) {
-            case SDLK_F1: renderer_set_wireframe(&app->render_state, !app->render_state.wireframe_enabled); break;
-            case SDLK_F2: toggle_collision_visibility(); break;
+            case SDLK_F1: renderer_toggle_wireframe(&app->render_state); break;
+            case SDLK_F2: collision_toggle_debugging(); break;
             case SDLK_1: app->timescale = 1.0f; break;
             case SDLK_2: app->timescale = 0.5f; break;
             case SDLK_3: app->timescale = 0.1f; break;
@@ -176,9 +176,8 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         }
     }
 
-    if (event->type == SDL_EVENT_MOUSE_WHEEL) {
+    if (event->type == SDL_EVENT_MOUSE_WHEEL)
         camera_set_zoom(&g_camera, event->wheel.y);
-    }
 
     if (event->type == SDL_EVENT_WINDOW_RESIZED) {
         sync_vp(app->window, &g_camera);
