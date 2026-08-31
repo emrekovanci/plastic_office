@@ -36,7 +36,8 @@ void camera_proj(Camera *c, mat4 out)
     glm_ortho(
         0, (float)c->viewport_w,
         0, (float)c->viewport_h,
-        -1, 1, out);
+        -1, 1,
+        out);
 }
 
 void camera_set_zoom(Camera *c, float dir)

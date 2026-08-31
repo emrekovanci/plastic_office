@@ -33,8 +33,9 @@ struct Tilemap {
 
 bool tilemap_read(const char *path, int *map, int w, int h);
 bool tilemap_build(Tilemap *out);
-void tilemap_render(Tilemap *tilemap, Shader *shader);
-bool tilemap_has_collision(Tilemap *tilemap, int x, int y);
-void tilemap_destroy(Tilemap *tilemap);
+void tilemap_render(Tilemap *t, Shader *s);
+bool tilemap_has_collision(Tilemap *t, int x, int y);
+void tilemap_destroy(Tilemap *t);
+void tilemap_toggle_collision_visibility(Tilemap *t);
 
 #endif

@@ -175,16 +175,16 @@ bool tilemap_build(Tilemap *out)
     return true;
 }
 
-void tilemap_render(Tilemap *tilemap, Shader *shader)
+void tilemap_render(Tilemap *t, Shader *s)
 {
     // TODO: no need to calculate every frame, tilemap doesnt move
     mat4 model = GLM_MAT4_IDENTITY_INIT;
     glm_translate(model, (vec3){ 0.0f, 0.0f, 0.0f });
     glm_scale(model, (vec3){ (float)TILE_SCALE, (float)TILE_SCALE, 1.0f });
-    shader_set_mat4(shader, "model", (float*)model);
+    shader_set_mat4(s, "model", (float*)model);
 
     for (int i = 0; i < MAP_LAYERS; ++i) {
-        TilemapLayer *layer = &tilemap->layers[i];
+        TilemapLayer *layer = &t->layers[i];
         if (!layer->visible)
             continue;
 
@@ -194,22 +194,28 @@ void tilemap_render(Tilemap *tilemap, Shader *shader)
     }
 }
 
-bool tilemap_has_collision(Tilemap *tilemap, int x, int y)
+bool tilemap_has_collision(Tilemap *t, int x, int y)
 {
     if (x < 0 || x >= MAP_COLS || y < 0 || y >= MAP_ROWS)
         return false;
 
-    return tilemap->collision[TILE_INDEX(x, y)] >= 0;
+    return t->collision[TILE_INDEX(x, y)] >= 0;
 }
 
-void tilemap_destroy(Tilemap *tilemap)
+void tilemap_destroy(Tilemap *t)
 {
     for (int i = 0; i < MAP_LAYERS; ++i) {
-        TilemapLayer *layer = &tilemap->layers[i];
+        TilemapLayer *layer = &t->layers[i];
 
         glDeleteVertexArrays(1, &layer->vao);
         glDeleteBuffers(1, &layer->vbo);
         glDeleteBuffers(1, &layer->ebo);
         texture_destroy(&layer->texture);
     }
+}
+
+void tilemap_toggle_collision_visibility(Tilemap *t)
+{
+    TilemapLayer *collision_layer = &t->layers[COLLISION_LAYER_INDEX];
+    collision_layer->visible = !collision_layer->visible;
 }
