@@ -10,33 +10,40 @@ project(
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 
-# address sanitizer
+# -------
+# options
+# -------
 option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
-if(ENABLE_ASAN)
-  if(MSVC)
-    add_compile_options(/fsanitize=address /Zi)
-    add_link_options(/INCREMENTAL:NO)
-  else()
-    add_compile_options(-fsanitize=address -g)
-    add_link_options(-fsanitize=address)
-  endif()
-endif()
+option(ENABLE_ASM_OUTPUT "Enable ASM Output" OFF)
+option(BUILD_CONSOLE "Build with console window (useful for debugging)" ON)
 
-# asm output
-option(ENABLE_ASM_OUTPUT "Enable Asm Output" OFF)
-if(ENABLE_ASM_OUTPUT)
-  if(MSVC)
-    add_compile_options(/FA)
+function(sss_apply_dev_flags target)
+  if(ENABLE_ASAN)
+    if(MSVC)
+      target_compile_options(${target} PRIVATE /fsanitize=address /Zi)
+      target_link_options(${target} PRIVATE /INCREMENTAL:NO)
+    else()
+      target_compile_options(${target} PRIVATE -fsanitize=address -g)
+      target_link_options(${target} PRIVATE -fsanitize=address)
+    endif()
   endif()
-endif()
 
+  if (ENABLE_ASM_OUTPUT AND MSVC)
+    target_compile_options(${target} PRIVATE /FA)
+  endif()
+endfunction()
+
+# ------------
 # dependencies
+# ------------
 add_subdirectory(vendor/glad EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/cglm EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/freetype EXCLUDE_FROM_ALL)
 
+# ------------
 # game library
+# ------------
 add_library(game_lib STATIC
   vendor/stb/stb_image.c
   vendor/stb/stb_ds.c
@@ -57,28 +64,36 @@ add_library(game_lib STATIC
 )
 target_link_libraries(game_lib PUBLIC glad SDL3::SDL3 cglm_headers freetype)
 target_include_directories(game_lib PUBLIC . vendor/stb)
+sss_apply_dev_flags(game_lib)
 
+# ---------------
 # game executable
-option(BUILD_CONSOLE "Build with console window (useful for debugging)" ON)
+# ---------------
 if(WIN32 AND NOT BUILD_CONSOLE)
   add_executable(app WIN32 main.c)
 else()
   add_executable(app main.c)
 endif()
 target_link_libraries(app PRIVATE game_lib)
+sss_apply_dev_flags(app)
 
-# font tests
-add_executable(test_font tests/renderer/test_font.c)
-target_link_libraries(test_font PRIVATE game_lib)
-
-# copy assets
 add_custom_command(
   TARGET app POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:app>/assets
 )
 
-# test suite
+# --------------------------------------------------------------
+# font tests (standalone sample binary, not part of ctest suite)
+# --------------------------------------------------------------
+add_executable(test_font tests/renderer/test_font.c)
+target_link_libraries(test_font PRIVATE game_lib)
+sss_apply_dev_flags(test_font)
+
+# ---------------
+# unit test suite
+# ---------------
 include(CTest)
+
 add_library(unity STATIC vendor/Unity/src/unity.c)
 target_include_directories(unity PUBLIC vendor/Unity/src)
 
