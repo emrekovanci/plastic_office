@@ -95,7 +95,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     *appstate = app;
     app->timescale = 1.0f;
     
-    if (!window_init(&app->window)) {
+    if (!window_init(&app->window, true)) {
         SDL_Log("Failed to create game window!");
         return SDL_APP_FAILURE;
     }

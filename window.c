@@ -2,12 +2,64 @@
 #include "window.h"
 #include "constants.h"
 
-bool window_init(GameWindow *game_window)
+static void GLAPIENTRY gl_debug_callback(
+    GLenum source, GLenum type, GLuint id,
+    GLenum severity, GLsizei length,
+    const GLchar *message, const void *user_param)
 {
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    (void)length;
+    (void)user_param;
+
+    // ignore non-significant error/warning codes
+    if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
+        return;
+
+    const char *source_str;
+    switch (source) {
+        case GL_DEBUG_SOURCE_API:             source_str = "API"; break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   source_str = "Window System"; break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER: source_str = "Shader Compiler"; break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY:     source_str = "Third Party"; break;
+        case GL_DEBUG_SOURCE_APPLICATION:     source_str = "Application"; break;
+        default:                              source_str = "Other"; break;
+    }
+
+    const char *type_str;
+    switch (type) {
+        case GL_DEBUG_TYPE_ERROR:               type_str = "Error"; break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: type_str = "Deprecated Behavior"; break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  type_str = "Undefined Behavior"; break;
+        case GL_DEBUG_TYPE_PORTABILITY:         type_str = "Portability"; break;
+        case GL_DEBUG_TYPE_PERFORMANCE:         type_str = "Performance"; break;
+        case GL_DEBUG_TYPE_MARKER:              type_str = "Marker"; break;
+        case GL_DEBUG_TYPE_PUSH_GROUP:          type_str = "Push Group"; break;
+        case GL_DEBUG_TYPE_POP_GROUP:           type_str = "Pop Group"; break;
+        default:                                type_str = "Other"; break;
+    }
+
+    const char *severity_str;
+    switch (severity) {
+        case GL_DEBUG_SEVERITY_HIGH:         severity_str = "HIGH"; break;
+        case GL_DEBUG_SEVERITY_MEDIUM:       severity_str = "MEDIUM"; break;
+        case GL_DEBUG_SEVERITY_LOW:          severity_str = "LOW"; break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION: severity_str = "NOTIFICATION"; break;
+        default:                             severity_str = "UNKNOWN"; break;
+    }
+
+    SDL_Log("[GL %s] source=%s type=%s id=%u: %s", severity_str, source_str, type_str, id, message);
+}
+
+bool window_init(GameWindow *game_window, bool debugging)
+{
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+    // Debug output is core since OpenGL version 4.3
+    // which means you'll find this functionality on any machine that runs OpenGL 4.3 or higher.
+    if (debugging)
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
     SDL_Window *window = SDL_CreateWindow("SSS", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
     if (!window) {
@@ -34,6 +86,18 @@ bool window_init(GameWindow *game_window)
     if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
         SDL_Log("Failed to load GLAD: %s", SDL_GetError());
         return false;
+    }
+
+    int flags;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(gl_debug_callback, NULL);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+        SDL_Log("OpenGL Debug Context enabled.");
+    } else {
+        SDL_Log("OpenGL Debug Context disabled.");
     }
 
     SDL_Log("OpenGL Version: %s", glGetString(GL_VERSION));
