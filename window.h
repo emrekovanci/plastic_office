@@ -4,9 +4,6 @@
 #include <stdbool.h>
 #include <SDL3/SDL.h>
 
-#define WINDOW_WIDTH  1920
-#define WINDOW_HEIGHT 1080
-
 typedef struct GameWindow GameWindow;
 struct GameWindow {
     SDL_Window *handle;

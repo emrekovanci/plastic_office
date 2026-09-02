@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include "window.h"
+#include "constants.h"
 
 bool window_init(GameWindow *game_window)
 {

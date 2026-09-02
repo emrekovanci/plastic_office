@@ -1,6 +1,10 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+// window
+#define WINDOW_WIDTH          1920
+#define WINDOW_HEIGHT         1080
+
 //  tiles
 #define TILE_SCALE            8
 #define TILE_SIZE             32

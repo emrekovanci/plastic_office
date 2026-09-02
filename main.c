@@ -75,7 +75,7 @@ struct AppContext {
     float timescale;
     Uint64 last_tick;
     double accumulator;
-    GameWindow *window;
+    GameWindow window;
 };
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
@@ -94,14 +94,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
     *appstate = app;
     app->timescale = 1.0f;
-
-    app->window = SDL_calloc(1, sizeof(*app->window));
-    if (!app->window) {
-        SDL_Log("Failed to allocate memory for GameWindow: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
     
-    if (!window_init(app->window)) {
+    if (!window_init(&app->window)) {
         SDL_Log("Failed to create game window!");
         return SDL_APP_FAILURE;
     }
@@ -137,7 +131,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     shader_bind(&g_shader_sprite);
     shader_set_int(&g_shader_sprite, "texture1", 0);
 
-    sync_vp(app->window, &g_camera);
+    sync_vp(&app->window, &g_camera);
 
     // initial zoom
     g_camera.zoom = SDL_clamp(g_camera.zoom, camera_min_zoom(&g_camera, MAP_ROWS), camera_max_zoom(&g_camera));
@@ -174,7 +168,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         camera_set_zoom(&g_camera, event->wheel.y);
 
     if (event->type == SDL_EVENT_WINDOW_RESIZED) {
-        sync_vp(app->window, &g_camera);
+        sync_vp(&app->window, &g_camera);
         SDL_Log("Window resized: W: %d, H: %d", event->window.data1, event->window.data2);
     }
 
@@ -226,7 +220,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     // debugging
     render_debug_panel();
 
-    window_swap(app->window);
+    window_swap(&app->window);
     return SDL_APP_CONTINUE;
 }
 
@@ -249,7 +243,6 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
     font_destroy(&g_font);
     shader_destroy(&g_shader_text);
 
-    window_destroy(app->window);
-    SDL_free(app->window);
+    window_destroy(&app->window);
     SDL_free(app);
 }
