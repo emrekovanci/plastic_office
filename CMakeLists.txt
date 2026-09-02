@@ -40,6 +40,7 @@ add_subdirectory(vendor/glad EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/cglm EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/freetype EXCLUDE_FROM_ALL)
+add_subdirectory(vendor/Unity EXCLUDE_FROM_ALL)
 
 # ------------
 # game library
@@ -92,10 +93,7 @@ sss_apply_dev_flags(test_font)
 # ---------------
 # unit test suite
 # ---------------
-include(CTest)
-
-add_library(unity STATIC vendor/Unity/src/unity.c)
-target_include_directories(unity PUBLIC vendor/Unity/src)
+enable_testing()
 
 add_executable(tests
   tests/test_tilemap.c
