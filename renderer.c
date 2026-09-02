@@ -33,7 +33,7 @@ void renderer_viewport_resize(int width, int height, Camera *camera, Shader *sha
 {
     camera->viewport_w = width;
     camera->viewport_h = height;
-    glViewport(0, 0, camera->viewport_w, camera->viewport_h);
+    glViewport(0, 0, width, height);
 
     mat4 proj;
     camera_proj(camera, proj);

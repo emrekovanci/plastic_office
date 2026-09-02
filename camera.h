@@ -3,9 +3,6 @@
 
 #include <cglm/cglm.h>
 
-#define CAMERA_ZOOM_STEP         1.1f
-#define CAMERA_MIN_VISIBLE_TILES 6.0f
-
 typedef struct Camera Camera;
 struct Camera {
     int viewport_w;

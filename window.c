@@ -56,7 +56,7 @@ bool window_init(GameWindow *game_window, bool debugging)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    // Debug output is core since OpenGL version 4.3
+    // debug output is core since OpenGL version 4.3
     // which means you'll find this functionality on any machine that runs OpenGL 4.3 or higher.
     if (debugging)
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
@@ -95,9 +95,9 @@ bool window_init(GameWindow *game_window, bool debugging)
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(gl_debug_callback, NULL);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
-        SDL_Log("OpenGL Debug Context enabled.");
+        SDL_Log("OpenGL Debug Context enabled");
     } else {
-        SDL_Log("OpenGL Debug Context disabled.");
+        SDL_Log("OpenGL Debug Context disabled");
     }
 
     SDL_Log("OpenGL Version: %s", glGetString(GL_VERSION));
