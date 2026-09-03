@@ -36,7 +36,7 @@ Sprite g_spr_sky;
 Sprite g_spr_bg1;
 Sprite g_spr_bg2;
 
-static void sync_vp(GameWindow *game_window, Camera *camera)
+static void sync_vp(GameWindow *game_window)
 {
     int w, h;
     window_get_pixel_size(game_window, &w, &h);
@@ -131,7 +131,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     shader_bind(&g_shader_sprite);
     shader_set_int(&g_shader_sprite, "texture1", 0);
 
-    sync_vp(&app->window, &g_camera);
+    sync_vp(&app->window);
 
     // initial zoom
     g_camera.zoom = SDL_clamp(g_camera.zoom, camera_min_zoom(&g_camera, MAP_ROWS), camera_max_zoom(&g_camera));
@@ -168,7 +168,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         camera_set_zoom(&g_camera, event->wheel.y);
 
     if (event->type == SDL_EVENT_WINDOW_RESIZED) {
-        sync_vp(&app->window, &g_camera);
+        sync_vp(&app->window);
         SDL_Log("Window resized: W: %d, H: %d", event->window.data1, event->window.data2);
     }
 
