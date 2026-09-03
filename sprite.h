@@ -1,7 +1,6 @@
 #ifndef SPRITE_H
 #define SPRITE_H
 
-#include "vertex.h"
 #include "texture.h"
 #include "shader.h"
 

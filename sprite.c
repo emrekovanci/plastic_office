@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 #include <cglm/cglm.h>
+#include "vertex.h"
 
 void sprite_init(Sprite *sprite)
 {
