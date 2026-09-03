@@ -29,12 +29,12 @@ Font g_font;
 Shader g_shader_text;
 
 // backgrounds
-Texture g_bg_sky_tex;
-Sprite g_bg_sky_spr;
-Texture g_bg2_tex;
-Sprite g_bg2_spr;
-Texture g_bg1_tex;
-Sprite g_bg1_spr;
+Texture g_tex_sky;
+Texture g_tex_bg1;
+Texture g_tex_bg2;
+Sprite g_spr_sky;
+Sprite g_spr_bg1;
+Sprite g_spr_bg2;
 
 static void sync_vp(GameWindow *game_window, Camera *camera)
 {
@@ -109,13 +109,13 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     if (!tilemap_build(&g_tilemap))
         return SDL_APP_FAILURE;
 
-    texture_load("assets/Sky.png", &g_bg_sky_tex);
-    texture_load("assets/Background_Layer1.png", &g_bg1_tex);
-    texture_load("assets/Background_Layer2.png", &g_bg2_tex);
+    texture_load("assets/Sky.png", &g_tex_sky);
+    texture_load("assets/Background_Layer1.png", &g_tex_bg1);
+    texture_load("assets/Background_Layer2.png", &g_tex_bg2);
 
-    sprite_init(&g_bg_sky_spr);
-    sprite_init(&g_bg2_spr);
-    sprite_init(&g_bg1_spr);
+    sprite_init(&g_spr_sky);
+    sprite_init(&g_spr_bg1);
+    sprite_init(&g_spr_bg2);
 
     player_init(&g_player);
 
@@ -202,9 +202,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     // render background
     shader_bind(&g_shader_default);
-    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.0f, &g_bg_sky_spr, &g_bg_sky_tex);
-    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.01f, &g_bg1_spr, &g_bg1_tex);
-    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.2f, &g_bg2_spr, &g_bg2_tex);
+    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.0f, &g_spr_sky, &g_tex_sky);
+    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.01f, &g_spr_bg1, &g_tex_bg1);
+    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.2f, &g_spr_bg2, &g_tex_bg2);
 
     // render tilemap
     mat4 view;
@@ -228,12 +228,12 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     AppContext *app = appstate;
 
-    sprite_destroy(&g_bg1_spr);
-    texture_destroy(&g_bg1_tex);
-    sprite_destroy(&g_bg2_spr);
-    texture_destroy(&g_bg2_tex);
-    sprite_destroy(&g_bg_sky_spr);
-    texture_destroy(&g_bg_sky_tex);
+    texture_destroy(&g_tex_bg2);
+    texture_destroy(&g_tex_bg1);
+    texture_destroy(&g_tex_sky);
+    sprite_destroy(&g_spr_bg2);
+    sprite_destroy(&g_spr_bg1);
+    sprite_destroy(&g_spr_sky);
 
     tilemap_destroy(&g_tilemap);
     player_destroy(&g_player);
