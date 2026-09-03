@@ -2,7 +2,8 @@
 #define INPUT_H
 
 #include <stdbool.h>
-#include <SDL3/SDL.h>
+#include <SDL3/SDL_scancode.h>
+#include <SDL3/SDL_mouse.h>
 
 typedef struct Input Input;
 struct Input {

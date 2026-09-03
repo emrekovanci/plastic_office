@@ -1,4 +1,5 @@
 #include "player.h"
+#include <math.h>
 #include "constants.h"
 #include "utils.h"
 

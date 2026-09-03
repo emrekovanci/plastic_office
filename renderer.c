@@ -1,6 +1,6 @@
 #include <glad/glad.h>
-#include <cglm/cglm.h>
 #include "renderer.h"
+#include <cglm/cglm.h>
 #include "constants.h"
 
 void renderer_init(RenderState *rs)

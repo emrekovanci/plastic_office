@@ -1,5 +1,7 @@
 #include "input.h"
 
+#include <SDL3/SDL_keyboard.h>
+
 void input_update(Input *input)
 {
     SDL_memcpy(input->prev_kb, input->curr_kb, sizeof(input->prev_kb));
