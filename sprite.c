@@ -11,16 +11,17 @@ void sprite_init(Sprite *sprite)
     const float y1 = 1.0f;
 
     // counter-clockwise vertices and indices order
-    sprite->vertices[0] = (Vertex){ x0, y0, 0, 1, 1, 1, 0, 0 }; // bottom-left
-    sprite->vertices[1] = (Vertex){ x1, y0, 0, 1, 1, 1, 1, 0 }; // bottom-right
-    sprite->vertices[2] = (Vertex){ x1, y1, 0, 1, 1, 1, 1, 1 }; // top-right
-    sprite->vertices[3] = (Vertex){ x0, y1, 0, 1, 1, 1, 0, 1 }; // top-left
-    sprite->indices[0] = 0;
-    sprite->indices[1] = 1;
-    sprite->indices[2] = 2;
-    sprite->indices[3] = 0;
-    sprite->indices[4] = 2;
-    sprite->indices[5] = 3;
+    const Vertex vertices[4] = {
+        { x0, y0, 0, 1, 1, 1, 0, 0 }, // bottom-left
+        { x1, y0, 0, 1, 1, 1, 1, 0 }, // bottom-right
+        { x1, y1, 0, 1, 1, 1, 1, 1 }, // top-right
+        { x0, y1, 0, 1, 1, 1, 0, 1 }  // top-left
+    };
+
+    const unsigned int indices[6] = {
+        0, 1, 2,
+        0, 2, 3
+    };
 
     glGenVertexArrays(1, &sprite->vao);
     glGenBuffers(1, &sprite->vbo);
@@ -28,16 +29,10 @@ void sprite_init(Sprite *sprite)
     glBindVertexArray(sprite->vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, sprite->vbo);
-    glBufferData(GL_ARRAY_BUFFER,
-                 sizeof(sprite->vertices),
-                 sprite->vertices,
-                 GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sprite->ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                 sizeof(sprite->indices),
-                 sprite->indices,
-                 GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(0);
@@ -54,16 +49,19 @@ void sprite_render(Sprite *sprite, Texture *texture, Shader *shader,
                    float pivot_x, float pivot_y)
 {
     mat4 model = GLM_MAT4_IDENTITY_INIT;
+
+    // translate
     glm_translate(model, (vec3){ x - (size_x * pivot_x), y - (size_y * pivot_y), 0.0f });
-    // rotation around pivot start
-    glm_translate(model, (vec3){ size_x * pivot_x, size_y * pivot_y, 0.0f });
+    
+    // rotation around pivot
+    glm_translate(model, (vec3){ pivot_x * size_x, pivot_y * size_y, 0.0f });
     glm_rotate(model, glm_rad(rotation), (vec3){ 0.0f, 0.0f, 1.0f });
-    glm_translate(model, (vec3){ -size_x * pivot_x, -size_y * pivot_y, 0.0f });
-    // rotation around pivot end
+    glm_translate(model, (vec3){ -pivot_x * size_x, -pivot_y * size_y, 0.0f });
+
+    // scale
     glm_scale(model, (vec3){ size_x, size_y, 1.0f });
 
     shader_set_mat4(shader, "model", (float*)model);
-
     texture_bind(texture, 0);
     glBindVertexArray(sprite->vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

@@ -7,8 +7,6 @@
 
 typedef struct Sprite Sprite;
 struct Sprite {
-    Vertex vertices[4];
-    unsigned int indices[6];
     unsigned int vao;
     unsigned int vbo;
     unsigned int ebo;
