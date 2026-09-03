@@ -11,7 +11,7 @@ struct Sprite {
     unsigned int ebo;
 };
 
-void sprite_init(Sprite *sprite);
+void sprite_create(Sprite *sprite);
 
 // ================== Pivots ==================
 // 0.5f, 0.5f = center        (general)

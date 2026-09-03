@@ -113,9 +113,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     texture_load("assets/Background_Layer1.png", &g_tex_bg1);
     texture_load("assets/Background_Layer2.png", &g_tex_bg2);
 
-    sprite_init(&g_spr_sky);
-    sprite_init(&g_spr_bg1);
-    sprite_init(&g_spr_bg2);
+    sprite_create(&g_spr_sky);
+    sprite_create(&g_spr_bg1);
+    sprite_create(&g_spr_bg2);
 
     player_init(&g_player);
 

@@ -4,7 +4,7 @@
 #include <cglm/cglm.h>
 #include "vertex.h"
 
-void sprite_init(Sprite *sprite)
+void sprite_create(Sprite *sprite)
 {
     const float x0 = 0.0f;
     const float y0 = 0.0f;

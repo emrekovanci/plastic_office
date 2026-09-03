@@ -127,7 +127,7 @@ static void player_on_pre_step_y(Player *player, Tilemap *tilemap)
 
 void player_init(Player *player)
 {
-    sprite_init(&player->sprite);
+    sprite_create(&player->sprite);
     texture_load("assets/Gangsters_1/Idle.png", &player->texture_idle);
     texture_load("assets/Gangsters_1/Walk.png", &player->texture_walk);
     texture_load("assets/Gangsters_1/Run.png", &player->texture_run);
