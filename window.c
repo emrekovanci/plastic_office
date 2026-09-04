@@ -49,8 +49,50 @@ static void GLAPIENTRY gl_debug_callback(
     SDL_Log("[GL %s] source=%s type=%s id=%u: %s", severity_str, source_str, type_str, id, message);
 }
 
+static void window_setup_vsync(bool wants_vsync)
+{
+    if (!wants_vsync) {
+        if (!SDL_GL_SetSwapInterval(0))
+            SDL_Log("Failed to disable VSync: %s", SDL_GetError());
+        return;
+    }
+
+    if (SDL_GL_SetSwapInterval(1))
+        return;
+
+    SDL_Log("VSync(1) failed, trying adaptive VSync: %s", SDL_GetError());
+    if (!SDL_GL_SetSwapInterval(-1))
+        SDL_Log("Adaptive VSync also failed, running unsynced: %s", SDL_GetError());
+}
+
+static void window_setup_debug_output(bool requested)
+{
+    int flags;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+
+    if (requested && (flags & GL_CONTEXT_FLAG_DEBUG_BIT)) {
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(gl_debug_callback, NULL);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+        SDL_Log("OpenGL Debug Context enabled");
+    } else {
+        SDL_Log("OpenGL Debug Context disabled%s", requested ? " (driver did not grant debug context)" : "");
+    }
+}
+
+static void window_log_gl_info(void)
+{
+    SDL_Log("OpenGL Version: %s", glGetString(GL_VERSION));
+    SDL_Log("GLSL Version: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+    SDL_Log("Renderer: %s", glGetString(GL_RENDERER));
+    SDL_Log("Vendor: %s", glGetString(GL_VENDOR));
+}
+
 bool window_init(GameWindow *game_window, const GameWindowConfig *config)
 {
+    *game_window = (GameWindow){0};
+
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -76,39 +118,26 @@ bool window_init(GameWindow *game_window, const GameWindowConfig *config)
     SDL_GLContext gl_context = SDL_GL_CreateContext(game_window->handle);
     if (!gl_context) {
         SDL_Log("Failed to create GL context: %s", SDL_GetError());
+        window_destroy(game_window);
         return false;
     }
     game_window->gl_context = gl_context;
 
     if (!SDL_GL_MakeCurrent(game_window->handle, game_window->gl_context)) {
         SDL_Log("Failed to set up GL context into window: %s", SDL_GetError());
+        window_destroy(game_window);
         return false;
     }
-
-    if (!SDL_GL_SetSwapInterval(1))
-        SDL_Log("Failed to activate VSync: %s", SDL_GetError());
 
     if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
         SDL_Log("Failed to load GLAD: %s", SDL_GetError());
+        window_destroy(game_window);
         return false;
     }
 
-    int flags;
-    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
-        glEnable(GL_DEBUG_OUTPUT);
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback(gl_debug_callback, NULL);
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
-        SDL_Log("OpenGL Debug Context enabled");
-    } else {
-        SDL_Log("OpenGL Debug Context disabled");
-    }
-
-    SDL_Log("OpenGL Version: %s", glGetString(GL_VERSION));
-    SDL_Log("GLSL Version: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
-    SDL_Log("Renderer: %s", glGetString(GL_RENDERER));
-    SDL_Log("Vendor: %s", glGetString(GL_VENDOR));
+    window_setup_vsync(config->vsync);
+    window_setup_debug_output(config->debugging);
+    window_log_gl_info();
 
     return true;
 }
@@ -116,7 +145,10 @@ bool window_init(GameWindow *game_window, const GameWindowConfig *config)
 void window_destroy(GameWindow *game_window)
 {
     SDL_GL_DestroyContext(game_window->gl_context);
+    game_window->gl_context = NULL;
+
     SDL_DestroyWindow(game_window->handle);
+    game_window->handle = NULL;
 }
 
 bool window_is_fullscreen(GameWindow *game_window)
