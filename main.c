@@ -22,7 +22,6 @@ Shader g_shader_default;
 Camera g_camera;
 Tilemap g_tilemap;
 Player g_player;
-Input g_input;
 
 // text rendering
 Font g_font;
@@ -71,6 +70,7 @@ static void render_debug_panel()
 
 typedef struct AppContext AppContext;
 struct AppContext {
+    Input input;
     RenderState render_state;
     float timescale;
     Uint64 last_tick;
@@ -208,15 +208,15 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     app->last_tick = current_tick;
     app->accumulator += dt;
 
-    input_update(&g_input);
+    input_update(&app->input);
 
     while (app->accumulator >= FIXED_TIMESTEP) {
-        player_fixed_update(&g_player, FIXED_TIMESTEP, &g_input, &g_tilemap);
+        player_fixed_update(&g_player, FIXED_TIMESTEP, &app->input, &g_tilemap);
         app->accumulator -= FIXED_TIMESTEP;
     }
 
     const float alpha = (float)(app->accumulator / FIXED_TIMESTEP);
-    player_update(&g_player, dt, &g_input, alpha, &g_tilemap);
+    player_update(&g_player, dt, &app->input, alpha, &g_tilemap);
     camera_update(&g_camera, dt, g_player.render_xx);
 
     // -----

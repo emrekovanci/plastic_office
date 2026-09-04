@@ -131,7 +131,7 @@ bool font_load(Font *font, const char *path, unsigned int size, int atlas_dim)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    SDL_Log("Font loaded: %s, Size: %u, Atlas: %ux%u, Has Kerning: %d", path, size, atlas_dim, atlas_dim, font->kerning);
+    SDL_Log("Font loaded: %s, Size: %u, Atlas: %dx%d, Has Kerning: %d", path, size, atlas_dim, atlas_dim, font->kerning);
     return true;
 }
 

@@ -103,6 +103,7 @@ add_executable(tests
 )
 target_link_libraries(tests PRIVATE unity game_lib)
 set_target_properties(tests PROPERTIES EXCLUDE_FROM_ALL TRUE)
+sss_apply_dev_flags(tests)
 
 add_custom_command(
   TARGET tests POST_BUILD
