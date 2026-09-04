@@ -113,22 +113,16 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     app->last_tick = SDL_GetTicks();
 
-    camera_init(&g_camera);
-
+    // -------------
+    // asset loading
+    // -------------
     font_load(&g_font, "assets/fonts/NotoSans-Medium.ttf", 32, 512);
-
-    if (!tilemap_build(&g_tilemap))
-        return SDL_APP_FAILURE;
-
     texture_load("assets/Sky.png", &g_tex_sky);
     texture_load("assets/Background_Layer1.png", &g_tex_bg1);
     texture_load("assets/Background_Layer2.png", &g_tex_bg2);
-
     sprite_create(&g_spr_sky);
     sprite_create(&g_spr_bg1);
     sprite_create(&g_spr_bg2);
-
-    player_init(&g_player);
 
     shader_load(&g_shader_text, "assets/shaders/text_vs.glsl", "assets/shaders/text_fs.glsl");
     shader_bind(&g_shader_text);
@@ -142,6 +136,13 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     shader_bind(&g_shader_sprite);
     shader_set_int(&g_shader_sprite, "texture1", 0);
 
+    // -----
+    // scene
+    // -----
+    player_init(&g_player);
+    camera_init(&g_camera);
+    tilemap_build(&g_tilemap);
+    
     sync_vp(&app->window);
 
     // ------------
