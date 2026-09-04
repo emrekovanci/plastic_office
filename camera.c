@@ -43,12 +43,12 @@ void camera_proj(Camera *c, mat4 out)
 void camera_set_zoom(Camera *c, float dir)
 {
     const float zoom_factor = (dir > 0) ? CAMERA_ZOOM_STEP : (1.0f / CAMERA_ZOOM_STEP);
-    c->zoom_target = SDL_clamp(c->zoom_target * zoom_factor, camera_min_zoom(c, MAP_ROWS), camera_max_zoom(c));
+    c->zoom_target = SDL_clamp(c->zoom_target * zoom_factor, camera_min_zoom(c), camera_max_zoom(c));
 }
 
-float camera_min_zoom(const Camera *c, int map_rows)
+float camera_min_zoom(const Camera *c)
 {
-    return (float)c->viewport_h / (map_rows * TILE_RENDER_SIZE);
+    return (float)c->viewport_h / (MAP_ROWS * TILE_RENDER_SIZE);
 }
 
 float camera_max_zoom(const Camera *c)

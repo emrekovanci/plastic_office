@@ -20,7 +20,7 @@ void camera_view(Camera *c, mat4 out);
 void camera_proj(Camera *c, mat4 out);
 
 void camera_set_zoom(Camera *c, float dir);
-float camera_min_zoom(const Camera *c, int map_rows);
+float camera_min_zoom(const Camera *c);
 float camera_max_zoom(const Camera *c);
 
 #endif
