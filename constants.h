@@ -4,6 +4,8 @@
 // window
 #define WINDOW_WIDTH             1920
 #define WINDOW_HEIGHT            1080
+#define WINDOW_GL_MAJOR_VERSION  4
+#define WINDOW_GL_MINOR_VERSION  3
 
 // camera
 #define CAMERA_ZOOM_STEP         1.1f
