@@ -114,6 +114,24 @@ void window_destroy(GameWindow *game_window)
     SDL_DestroyWindow(game_window->handle);
 }
 
+bool window_is_fullscreen(GameWindow *game_window)
+{
+    SDL_WindowFlags flags = SDL_GetWindowFlags(game_window->handle);
+    return (flags & SDL_WINDOW_FULLSCREEN) != 0;
+}
+
+void window_toggle_fullscreen(GameWindow *game_window)
+{
+    bool is_fullscreen = window_is_fullscreen(game_window);
+
+    if (!SDL_SetWindowFullscreen(game_window->handle, !is_fullscreen)) {
+        SDL_Log("Failed to toggle fullscreen: %s", SDL_GetError());
+        return;
+    }
+
+    SDL_Log("Fullscreen: %s", !is_fullscreen ? "ON": "OFF");
+}
+
 void window_swap(GameWindow *game_window)
 {
     SDL_GL_SwapWindow(game_window->handle);

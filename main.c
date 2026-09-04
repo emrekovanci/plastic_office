@@ -159,6 +159,10 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             case SDLK_2: app->timescale = 0.5f; break;
             case SDLK_3: app->timescale = 0.1f; break;
             case SDLK_4: app->timescale = 0.0f; break;
+            case SDLK_RETURN:
+                if (event->key.mod & SDL_KMOD_ALT)
+                    window_toggle_fullscreen(&app->window);
+                break;
             case SDLK_ESCAPE: return SDL_APP_SUCCESS;
             default: break;
         }
