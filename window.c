@@ -49,7 +49,7 @@ static void GLAPIENTRY gl_debug_callback(
     SDL_Log("[GL %s] source=%s type=%s id=%u: %s", severity_str, source_str, type_str, id, message);
 }
 
-bool window_init(GameWindow *game_window, bool debugging)
+bool window_init(GameWindow *game_window, const GameWindowConfig *config)
 {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -58,12 +58,17 @@ bool window_init(GameWindow *game_window, bool debugging)
 
     // debug output is core since OpenGL version 4.3
     // which means you'll find this functionality on any machine that runs OpenGL 4.3 or higher.
-    if (debugging)
+    if (config->debugging)
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
-    SDL_Window *window = SDL_CreateWindow("SSS", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+    SDL_WindowFlags window_flags = SDL_WINDOW_OPENGL;
+    if (config->fullscreen)
+        window_flags |= SDL_WINDOW_FULLSCREEN;
+
+    SDL_Window *window = SDL_CreateWindow("SSS", config->width, config->height, window_flags);
     if (!window) {
         SDL_Log("Couldn't create window: %s", SDL_GetError());
+        window_destroy(game_window);
         return false;
     }
     game_window->handle = window;

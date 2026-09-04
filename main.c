@@ -94,8 +94,19 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
     *appstate = app;
     app->timescale = 1.0f;
+
+    // -----------------
+    // initialize window
+    // -----------------
+    GameWindowConfig window_config = {
+        .width = WINDOW_WIDTH,
+        .height = WINDOW_HEIGHT,
+        .fullscreen = true,
+        .vsync = true,
+        .debugging = true
+    };
     
-    if (!window_init(&app->window, true)) {
+    if (!window_init(&app->window, &window_config)) {
         SDL_Log("Failed to create game window!");
         return SDL_APP_FAILURE;
     }
@@ -133,11 +144,15 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     sync_vp(&app->window);
 
+    // ------------
     // initial zoom
+    // ------------
     g_camera.zoom = SDL_clamp(g_camera.zoom, camera_min_zoom(&g_camera), camera_max_zoom(&g_camera));
     g_camera.zoom_target = g_camera.zoom;
 
-    // renderer
+    // -------------------
+    // initialize renderer
+    // -------------------
     renderer_init(&app->render_state);
 
     SDL_Log("Viewport size: W: %d, H: %d", g_camera.viewport_w, g_camera.viewport_h);
@@ -183,6 +198,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 {
     AppContext *app = appstate;
 
+    // ---------
+    // game loop
+    // ---------
     const Uint64 current_tick = SDL_GetTicks();
     float dt = (float)(current_tick - app->last_tick) / SDL_MS_PER_SECOND;
     dt = SDL_min(dt, 0.25f);
@@ -201,27 +219,37 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     player_update(&g_player, dt, &g_input, alpha, &g_tilemap);
     camera_update(&g_camera, dt, g_player.render_xx);
 
+    // -----
     // clear
+    // -----
     renderer_clear(0.0f, 0.0f, 0.0f, 1.0f);
 
+    // -----------------
     // render background
+    // -----------------
     shader_bind(&g_shader_default);
     renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.0f, &g_spr_sky, &g_tex_sky);
     renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.01f, &g_spr_bg1, &g_tex_bg1);
     renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.2f, &g_spr_bg2, &g_tex_bg2);
 
+    // --------------
     // render tilemap
+    // --------------
     mat4 view;
     camera_view(&g_camera, view);
     shader_set_mat4(&g_shader_default, "view", (float*)view);
     tilemap_render(&g_tilemap, &g_shader_default);
 
+    // -------------
     // render player
+    // -------------
     shader_bind(&g_shader_sprite);
     shader_set_mat4(&g_shader_sprite, "view", (float*)view);
     player_render(&g_player, &g_shader_sprite);
 
+    // ---------
     // debugging
+    // ---------
     render_debug_panel();
 
     window_swap(&app->window);
