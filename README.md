@@ -21,6 +21,12 @@
 - https://github.com/libsdl-org/SDL/issues/12791
 - https://gamedev.stackexchange.com/questions/49032/8-directional-movement-maintain-vertical-position
 
+### CMake Analysis
+
+```
+cmake --preset=msvc -DCMAKE_BUILD_TYPE=Debug --trace-expand 2> trace.log
+```
+
 ### Frame Analysis
 
 ```
