@@ -31,9 +31,7 @@ Shader g_shader_text;
 Texture g_tex_sky;
 Texture g_tex_bg1;
 Texture g_tex_bg2;
-Sprite g_spr_sky;
-Sprite g_spr_bg1;
-Sprite g_spr_bg2;
+Sprite g_spr_bg;
 
 static void sync_vp(GameWindow *game_window)
 {
@@ -120,9 +118,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     texture_load("assets/Sky.png", &g_tex_sky);
     texture_load("assets/Background_Layer1.png", &g_tex_bg1);
     texture_load("assets/Background_Layer2.png", &g_tex_bg2);
-    sprite_create(&g_spr_sky);
-    sprite_create(&g_spr_bg1);
-    sprite_create(&g_spr_bg2);
+    sprite_create(&g_spr_bg);
 
     shader_load(&g_shader_text, "assets/shaders/text_vs.glsl", "assets/shaders/text_fs.glsl");
     shader_bind(&g_shader_text);
@@ -229,9 +225,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     // render background
     // -----------------
     shader_bind(&g_shader_default);
-    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.0f, &g_spr_sky, &g_tex_sky);
-    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.01f, &g_spr_bg1, &g_tex_bg1);
-    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.2f, &g_spr_bg2, &g_tex_bg2);
+    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.0f, &g_spr_bg, &g_tex_sky);
+    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.01f, &g_spr_bg, &g_tex_bg1);
+    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.2f, &g_spr_bg, &g_tex_bg2);
 
     // --------------
     // render tilemap
@@ -261,12 +257,10 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     AppContext *app = appstate;
 
+    sprite_destroy(&g_spr_bg);
     texture_destroy(&g_tex_bg2);
     texture_destroy(&g_tex_bg1);
     texture_destroy(&g_tex_sky);
-    sprite_destroy(&g_spr_bg2);
-    sprite_destroy(&g_spr_bg1);
-    sprite_destroy(&g_spr_sky);
 
     tilemap_destroy(&g_tilemap);
     player_destroy(&g_player);
