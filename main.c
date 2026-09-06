@@ -44,11 +44,15 @@ static void sync_vp(GameWindow *game_window)
         &g_shader_sprite
     };
     renderer_viewport_resize(w, h, &g_camera, shaders, 3);
+
+    g_camera.zoom = SDL_clamp(g_camera.zoom, camera_min_zoom(&g_camera), camera_max_zoom(&g_camera));
+    g_camera.zoom_target = g_camera.zoom;
 }
 
 static void debug_line(float y, const char* fmt, ...)
 {
     char buf[64];
+
     va_list args;
     va_start(args, fmt);
     SDL_vsnprintf(buf, sizeof(buf), fmt, args);
@@ -133,6 +137,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     shader_bind(&g_shader_sprite);
     shader_set_int(&g_shader_sprite, "texture1", 0);
 
+    // -------------------
+    // initialize renderer
+    // -------------------
+    renderer_init(&app->render_state);
+
     // -----
     // scene
     // -----
@@ -141,17 +150,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     tilemap_build(&g_tilemap);
 
     sync_vp(&app->window);
-
-    // ------------
-    // initial zoom
-    // ------------
-    g_camera.zoom = SDL_clamp(g_camera.zoom, camera_min_zoom(&g_camera), camera_max_zoom(&g_camera));
-    g_camera.zoom_target = g_camera.zoom;
-
-    // -------------------
-    // initialize renderer
-    // -------------------
-    renderer_init(&app->render_state);
 
     SDL_Log("Viewport size: W: %d, H: %d", g_camera.viewport_w, g_camera.viewport_h);
     return SDL_APP_CONTINUE;
