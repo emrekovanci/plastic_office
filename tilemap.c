@@ -19,8 +19,8 @@ static void tile_uv(int rows, int cols, int tile_id, float *u0, float *v0, float
 
     // to fix "texture bleeding" problem
     // this can be bad practice, idk we'll see...
-    // const float eps = 0.00005f; 
-    // 
+    // const float eps = 0.00005f;
+    //
     // *u0 = (float)col / cols + eps;
     // *v0 = (float)row / rows + eps;
     // *u1 = (float)(col + 1.0f) / cols - eps;
@@ -119,7 +119,7 @@ bool tilemap_build(Tilemap *out)
     for (int l = 0; l < MAP_LAYERS; ++l) {
         TilemapLayer *layer = &out->layers[l];
 
-        if (!texture_load(LAYER_DEFS[l].texture, &layer->texture))
+        if (!texture_load(&layer->texture, LAYER_DEFS[l].texture))
             return false;
 
         int map[MAP_COLS * MAP_ROWS] = {0};

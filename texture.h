@@ -11,7 +11,7 @@ struct Texture {
     int height;
 };
 
-bool texture_load(const char *path, Texture *out);
+bool texture_load(Texture *out, const char *path);
 void texture_destroy(Texture *tex);
 
 bool texture_create_solid(Texture *out, Color color);

@@ -53,6 +53,7 @@ static void debug_line(float y, const char* fmt, ...)
     va_start(args, fmt);
     SDL_vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
+
     font_render_text(&g_font, &g_shader_text, buf, 20.0f, y, 1.0f, WHITE);
 }
 
@@ -103,7 +104,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         .vsync = true,
         .debugging = true
     };
-    
+
     if (!window_init(&app->window, &window_config)) {
         SDL_Log("Failed to create game window!");
         return SDL_APP_FAILURE;
@@ -115,9 +116,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     // asset loading
     // -------------
     font_load(&g_font, "assets/fonts/NotoSans-Medium.ttf", 32, 512);
-    texture_load("assets/Sky.png", &g_tex_sky);
-    texture_load("assets/Background_Layer1.png", &g_tex_bg1);
-    texture_load("assets/Background_Layer2.png", &g_tex_bg2);
+    texture_load(&g_tex_sky, "assets/Sky.png");
+    texture_load(&g_tex_bg1, "assets/Background_Layer1.png");
+    texture_load(&g_tex_bg2, "assets/Background_Layer2.png");
     sprite_create(&g_spr_bg);
 
     shader_load(&g_shader_text, "assets/shaders/text_vs.glsl", "assets/shaders/text_fs.glsl");
@@ -138,7 +139,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     player_init(&g_player);
     camera_init(&g_camera);
     tilemap_build(&g_tilemap);
-    
+
     sync_vp(&app->window);
 
     // ------------

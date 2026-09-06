@@ -4,7 +4,7 @@
 #include <SDL3/SDL.h>
 #include <stb_image.h>
 
-bool texture_load(const char *path, Texture *out)
+bool texture_load(Texture *out, const char *path)
 {
     stbi_set_flip_vertically_on_load(true);
 

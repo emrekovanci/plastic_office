@@ -129,10 +129,10 @@ static void player_on_pre_step_y(Player *player, Tilemap *tilemap)
 void player_init(Player *player)
 {
     sprite_create(&player->sprite);
-    texture_load("assets/Gangsters_1/Idle.png", &player->texture_idle);
-    texture_load("assets/Gangsters_1/Walk.png", &player->texture_walk);
-    texture_load("assets/Gangsters_1/Run.png", &player->texture_run);
-    texture_load("assets/Gangsters_1/Jump.png", &player->texture_jump);
+    texture_load(&player->texture_idle, "assets/Gangsters_1/Idle.png");
+    texture_load(&player->texture_walk, "assets/Gangsters_1/Walk.png");
+    texture_load(&player->texture_run, "assets/Gangsters_1/Run.png");
+    texture_load(&player->texture_jump, "assets/Gangsters_1/Jump.png");
     texture_create_solid(&player->texture_hitbox, (Color){ 255, 0, 0, 100 });
 
     player->anim_frame = 0;
