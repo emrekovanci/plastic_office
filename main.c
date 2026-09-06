@@ -123,7 +123,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     shader_load(&g_shader_text, "assets/shaders/text_vs.glsl", "assets/shaders/text_fs.glsl");
     shader_bind(&g_shader_text);
-    shader_set_int(&g_shader_text, "text", 0);
+    shader_set_int(&g_shader_text, "texture1", 0);
 
     shader_load(&g_shader_default, "assets/shaders/default_vs.glsl", "assets/shaders/default_fs.glsl");
     shader_bind(&g_shader_default);
