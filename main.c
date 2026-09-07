@@ -24,6 +24,7 @@ Tilemap g_tilemap;
 Player g_player;
 
 // text rendering
+float g_ui_scale = 1.0f;
 Font g_font;
 Shader g_shader_text;
 
@@ -45,8 +46,12 @@ static void sync_vp(GameWindow *game_window)
     };
     renderer_viewport_resize(w, h, &g_camera, shaders, 3);
 
+    // camera
     g_camera.zoom = SDL_clamp(g_camera.zoom, camera_min_zoom(&g_camera), camera_max_zoom(&g_camera));
     g_camera.zoom_target = g_camera.zoom;
+
+    // ui
+    g_ui_scale = (float)h / UI_REFERENCE_HEIGHT;
 }
 
 static void debug_line(float y, const char* fmt, ...)
@@ -58,7 +63,10 @@ static void debug_line(float y, const char* fmt, ...)
     SDL_vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
 
-    font_render_text(&g_font, &g_shader_text, buf, 20.0f, y, 1.0f, WHITE);
+    font_render_text(&g_font, &g_shader_text, buf,
+                     20.0f * g_ui_scale,
+                     y * g_ui_scale,
+                     1.0f * g_ui_scale, WHITE);
 }
 
 static void render_debug_panel()

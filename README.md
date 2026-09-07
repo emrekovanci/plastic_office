@@ -36,7 +36,7 @@ ffmpeg -i cap.mp4 -vf fps=60 frames/frame_%04d.png
 ### Building
 
 ```
-cmake --preset=msvc -DCMAKE_BUILD_TYPE=Debug -DENABLE_ASAN=OFF -DBUILD_CONSOLE=ON
+cmake --preset=msvc -DCMAKE_BUILD_TYPE=Debug
 cmake --build build
 ```
 

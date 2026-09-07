@@ -7,6 +7,9 @@
 #define WINDOW_GL_MAJOR_VERSION  4
 #define WINDOW_GL_MINOR_VERSION  3
 
+// ui
+#define UI_REFERENCE_HEIGHT      1080.0f
+
 // camera
 #define CAMERA_ZOOM_STEP         1.1f
 #define CAMERA_MIN_VISIBLE_TILES 6.0f
