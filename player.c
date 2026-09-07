@@ -3,9 +3,6 @@
 #include "constants.h"
 #include "utils.h"
 
-// hitbox rendering for debugging purposes
-static bool g_render_hitbox = false;
-
 static void player_render_hitbox(Player *player, Shader *shader)
 {
     const float width = PLAYER_HITBOX_HALF_WIDTH * 2.0f * TILE_RENDER_SIZE;
@@ -159,6 +156,7 @@ void player_init(Player *player)
     player->grounded = false;
     player->prev_grounded = false;
     player->is_landing = false;
+    player->render_hitbox = false;
 }
 
 void player_destroy(Player *player)
@@ -279,7 +277,7 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
 void player_update(Player *player, float dt, Input *input, float alpha, Tilemap *tilemap)
 {
     if (input_key_pressed(input, SDL_SCANCODE_F3))
-        g_render_hitbox = !g_render_hitbox;
+        player->render_hitbox = !player->render_hitbox;
 
     if (input_key_pressed(input, SDL_SCANCODE_SPACE))
         player->jump_buffer_timer = PLAYER_JUMP_BUFFER;
@@ -354,6 +352,6 @@ void player_render(Player *player, Shader *shader)
         0.0f,
         0.5f, 0.0f);
 
-    if (g_render_hitbox)
+    if (player->render_hitbox)
         player_render_hitbox(player, shader);
 }

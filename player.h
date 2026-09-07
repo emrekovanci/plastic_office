@@ -71,6 +71,9 @@ struct Player {
     bool grounded;
     bool prev_grounded;
     bool is_landing;
+
+    // debugging
+    bool render_hitbox;
 };
 
 void player_init(Player *player);
