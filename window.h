@@ -24,6 +24,8 @@ void window_destroy(GameWindow *game_window);
 bool window_is_fullscreen(GameWindow *game_window);
 void window_toggle_fullscreen(GameWindow *game_window);
 void window_swap(GameWindow *game_window);
+
 void window_get_pixel_size(GameWindow *game_window, int *w, int *h);
+void window_get_logical_size(GameWindow *game_window, int *w, int *h);
 
 #endif
