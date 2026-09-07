@@ -32,7 +32,7 @@ struct Tilemap {
 };
 
 bool tilemap_read(const char *path, int *map, int w, int h);
-bool tilemap_build(Tilemap *out);
+bool tilemap_init(Tilemap *out);
 void tilemap_render(Tilemap *t, Shader *s);
 bool tilemap_has_collision(Tilemap *t, int x, int y);
 void tilemap_destroy(Tilemap *t);

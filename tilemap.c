@@ -114,7 +114,7 @@ bool tilemap_read(const char *path, int *map, int w, int h)
     return !err;
 }
 
-bool tilemap_build(Tilemap *out)
+bool tilemap_init(Tilemap *out)
 {
     for (int l = 0; l < MAP_LAYERS; ++l) {
         TilemapLayer *layer = &out->layers[l];

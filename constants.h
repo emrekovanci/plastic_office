@@ -2,8 +2,8 @@
 #define CONSTANTS_H
 
 // window
-#define WINDOW_WIDTH             1920
-#define WINDOW_HEIGHT            1080
+#define WINDOW_WIDTH             800
+#define WINDOW_HEIGHT            600
 #define WINDOW_GL_MAJOR_VERSION  4
 #define WINDOW_GL_MINOR_VERSION  3
 

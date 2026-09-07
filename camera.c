@@ -5,6 +5,8 @@
 
 void camera_init(Camera *c)
 {
+    c->viewport_w = WINDOW_WIDTH;
+    c->viewport_h = WINDOW_HEIGHT;
     c->x = 0.0f;
     c->y = 0.0f;
     c->zoom = 1.0f;

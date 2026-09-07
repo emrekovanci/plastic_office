@@ -145,9 +145,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     // -----
     // scene
     // -----
-    player_init(&g_player);
     camera_init(&g_camera);
-    tilemap_build(&g_tilemap);
+    tilemap_init(&g_tilemap);
+    player_init(&g_player);
 
     sync_vp(&app->window);
 
