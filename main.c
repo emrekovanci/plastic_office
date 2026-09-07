@@ -83,6 +83,7 @@ typedef struct AppContext AppContext;
 struct AppContext {
     Input input;
     RenderState render_state;
+    bool debug_overlay;
     float timescale;
     Uint64 last_tick;
     double accumulator;
@@ -105,6 +106,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
     *appstate = app;
     app->timescale = 1.0f;
+    app->debug_overlay = true;
 
     // -----------------
     // initialize window
@@ -174,6 +176,8 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         switch (event->key.key) {
             case SDLK_F1: renderer_toggle_wireframe(&app->render_state); break;
             case SDLK_F2: tilemap_toggle_collision_visibility(&g_tilemap); break;
+            case SDLK_F3: g_player.render_hitbox = !g_player.render_hitbox; break;
+            case SDLK_F4: app->debug_overlay = !app->debug_overlay; break;
             case SDLK_1: app->timescale = 1.0f; break;
             case SDLK_2: app->timescale = 0.5f; break;
             case SDLK_3: app->timescale = 0.1f; break;
@@ -254,7 +258,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     // ---------
     // debugging
     // ---------
-    render_debug_panel();
+    if (app->debug_overlay)
+        render_debug_panel();
 
     window_swap(&app->window);
     return SDL_APP_CONTINUE;
