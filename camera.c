@@ -27,7 +27,7 @@ void camera_update(Camera *cam, float dt, float target_x)
     cam->y = target_y;
 }
 
-void camera_view(Camera *cam, mat4 out)
+void camera_view(const Camera *cam, mat4 out)
 {
     glm_mat4_identity(out);
     glm_translate(out, (vec3) { cam->viewport_w * 0.5f, cam->viewport_h * 0.5f, 0.0f });
@@ -35,7 +35,7 @@ void camera_view(Camera *cam, mat4 out)
     glm_translate(out, (vec3){ -cam->x, -cam->y, 0.0f });
 }
 
-void camera_proj(Camera *cam, mat4 out)
+void camera_proj(const Camera *cam, mat4 out)
 {
     glm_ortho(
         0, (float)cam->viewport_w,

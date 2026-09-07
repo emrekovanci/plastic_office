@@ -16,8 +16,8 @@ struct Camera {
 
 void camera_init(Camera *cam);
 void camera_update(Camera *cam, float dt, float target_x);
-void camera_view(Camera *cam, mat4 out);
-void camera_proj(Camera *cam, mat4 out);
+void camera_view(const Camera *cam, mat4 out);
+void camera_proj(const Camera *cam, mat4 out);
 
 void camera_set_zoom(Camera *cam, float dir);
 float camera_min_zoom(const Camera *cam);
