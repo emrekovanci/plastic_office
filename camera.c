@@ -5,12 +5,14 @@
 
 void camera_init(Camera *cam)
 {
-    cam->viewport_w = WINDOW_WIDTH;
-    cam->viewport_h = WINDOW_HEIGHT;
-    cam->x = 0.0f;
-    cam->y = 0.0f;
-    cam->zoom = 1.0f;
-    cam->zoom_target = 1.0f;
+    *cam = (Camera) {
+        .viewport_w = WINDOW_WIDTH,
+        .viewport_h = WINDOW_HEIGHT,
+        .x = 0.0f,
+        .y = 0.0f,
+        .zoom = 1.0f,
+        .zoom_target = 1.0f
+    };
 }
 
 void camera_update(Camera *cam, float dt, float target_x)
