@@ -89,9 +89,9 @@ static void window_log_gl_info(void)
     SDL_Log("Vendor: %s", glGetString(GL_VENDOR));
 }
 
-bool window_init(GameWindow *game_window, const GameWindowConfig *config)
+bool window_init(Window *win, const WindowConfig *config)
 {
-    *game_window = (GameWindow){0};
+    *win = (Window){0};
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, WINDOW_GL_MAJOR_VERSION);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, WINDOW_GL_MINOR_VERSION);
@@ -110,28 +110,28 @@ bool window_init(GameWindow *game_window, const GameWindowConfig *config)
     SDL_Window *window = SDL_CreateWindow("SSS", config->width, config->height, window_flags);
     if (!window) {
         SDL_Log("Couldn't create window: %s", SDL_GetError());
-        window_destroy(game_window);
+        window_destroy(win);
         return false;
     }
-    game_window->handle = window;
+    win->handle = window;
 
-    SDL_GLContext gl_context = SDL_GL_CreateContext(game_window->handle);
+    SDL_GLContext gl_context = SDL_GL_CreateContext(win->handle);
     if (!gl_context) {
         SDL_Log("Failed to create GL context: %s", SDL_GetError());
-        window_destroy(game_window);
+        window_destroy(win);
         return false;
     }
-    game_window->gl_context = gl_context;
+    win->gl_context = gl_context;
 
-    if (!SDL_GL_MakeCurrent(game_window->handle, game_window->gl_context)) {
+    if (!SDL_GL_MakeCurrent(win->handle, win->gl_context)) {
         SDL_Log("Failed to set up GL context into window: %s", SDL_GetError());
-        window_destroy(game_window);
+        window_destroy(win);
         return false;
     }
 
     if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
         SDL_Log("Failed to load GLAD: %s", SDL_GetError());
-        window_destroy(game_window);
+        window_destroy(win);
         return false;
     }
 
@@ -142,26 +142,26 @@ bool window_init(GameWindow *game_window, const GameWindowConfig *config)
     return true;
 }
 
-void window_destroy(GameWindow *game_window)
+void window_destroy(Window *win)
 {
-    SDL_GL_DestroyContext(game_window->gl_context);
-    game_window->gl_context = NULL;
+    SDL_GL_DestroyContext(win->gl_context);
+    win->gl_context = NULL;
 
-    SDL_DestroyWindow(game_window->handle);
-    game_window->handle = NULL;
+    SDL_DestroyWindow(win->handle);
+    win->handle = NULL;
 }
 
-bool window_is_fullscreen(GameWindow *game_window)
+bool window_is_fullscreen(Window *win)
 {
-    SDL_WindowFlags flags = SDL_GetWindowFlags(game_window->handle);
+    SDL_WindowFlags flags = SDL_GetWindowFlags(win->handle);
     return (flags & SDL_WINDOW_FULLSCREEN) != 0;
 }
 
-void window_toggle_fullscreen(GameWindow *game_window)
+void window_toggle_fullscreen(Window *win)
 {
-    bool is_fullscreen = window_is_fullscreen(game_window);
+    bool is_fullscreen = window_is_fullscreen(win);
 
-    if (!SDL_SetWindowFullscreen(game_window->handle, !is_fullscreen)) {
+    if (!SDL_SetWindowFullscreen(win->handle, !is_fullscreen)) {
         SDL_Log("Failed to toggle fullscreen: %s", SDL_GetError());
         return;
     }
@@ -169,17 +169,17 @@ void window_toggle_fullscreen(GameWindow *game_window)
     SDL_Log("Fullscreen: %s", !is_fullscreen ? "ON": "OFF");
 }
 
-void window_swap(GameWindow *game_window)
+void window_swap(Window *win)
 {
-    SDL_GL_SwapWindow(game_window->handle);
+    SDL_GL_SwapWindow(win->handle);
 }
 
-void window_get_pixel_size(GameWindow *game_window, int *w, int *h)
+void window_get_pixel_size(Window *win, int *w, int *h)
 {
-    SDL_GetWindowSizeInPixels(game_window->handle, w, h);
+    SDL_GetWindowSizeInPixels(win->handle, w, h);
 }
 
-void window_get_logical_size(GameWindow *game_window, int *w, int *h)
+void window_get_logical_size(Window *win, int *w, int *h)
 {
-    SDL_GetWindowSize(game_window->handle, w, h);
+    SDL_GetWindowSize(win->handle, w, h);
 }

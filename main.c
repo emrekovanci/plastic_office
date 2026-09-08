@@ -34,13 +34,13 @@ Texture g_tex_bg1;
 Texture g_tex_bg2;
 Sprite g_spr_bg;
 
-static void sync_vp(GameWindow *game_window)
+static void sync_vp(Window *win)
 {
     int pw, ph;
-    window_get_pixel_size(game_window, &pw, &ph);
+    window_get_pixel_size(win, &pw, &ph);
 
     int lw, lh;
-    window_get_logical_size(game_window, &lw, &lh);
+    window_get_logical_size(win, &lw, &lh);
 
     Shader *shaders[] = {
         &g_shader_text,
@@ -91,7 +91,7 @@ struct AppContext {
     float timescale;
     Uint64 last_tick;
     double accumulator;
-    GameWindow window;
+    Window window;
 };
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
@@ -115,7 +115,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     // -----------------
     // initialize window
     // -----------------
-    GameWindowConfig window_config = {
+    WindowConfig window_config = {
         .width = WINDOW_WIDTH,
         .height = WINDOW_HEIGHT,
         .fullscreen = true,
@@ -124,7 +124,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     };
 
     if (!window_init(&app->window, &window_config)) {
-        SDL_Log("Failed to create game window!");
+        SDL_Log("Failed to create window!");
         return SDL_APP_FAILURE;
     }
 
