@@ -36,22 +36,26 @@ Sprite g_spr_bg;
 
 static void sync_vp(GameWindow *game_window)
 {
-    int w, h;
-    window_get_pixel_size(game_window, &w, &h);
+    int pw, ph;
+    window_get_pixel_size(game_window, &pw, &ph);
+
+    int lw, lh;
+    window_get_logical_size(game_window, &lw, &lh);
 
     Shader *shaders[] = {
         &g_shader_text,
         &g_shader_default,
         &g_shader_sprite
     };
-    renderer_viewport_resize(w, h, &g_camera, shaders, 3);
+    renderer_viewport_resize(pw, ph, &g_camera, shaders, 3);
 
     // camera
     g_camera.zoom = SDL_clamp(g_camera.zoom, camera_min_zoom(&g_camera), camera_max_zoom(&g_camera));
     g_camera.zoom_target = g_camera.zoom;
 
     // ui
-    g_ui_scale = (float)h / UI_REFERENCE_HEIGHT;
+    g_ui_scale = (float)lh / UI_REFERENCE_HEIGHT;
+    SDL_Log("UI Scale: %f", g_ui_scale);
 }
 
 static void debug_line(float y, const char* fmt, ...)

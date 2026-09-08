@@ -178,3 +178,8 @@ void window_get_pixel_size(GameWindow *game_window, int *w, int *h)
 {
     SDL_GetWindowSizeInPixels(game_window->handle, w, h);
 }
+
+void window_get_logical_size(GameWindow *game_window, int *w, int *h)
+{
+    SDL_GetWindowSize(game_window->handle, w, h);
+}
