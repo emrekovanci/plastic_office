@@ -28,7 +28,7 @@ function(sss_apply_dev_flags target)
     endif()
   endif()
 
-  if (ENABLE_ASM_OUTPUT AND MSVC)
+  if(ENABLE_ASM_OUTPUT AND MSVC)
     target_compile_options(${target} PRIVATE /FA)
   endif()
 endfunction()
