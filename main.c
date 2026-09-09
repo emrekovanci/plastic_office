@@ -288,4 +288,5 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
 
     window_destroy(&app->window);
     SDL_free(app);
+    SDL_Quit();
 }

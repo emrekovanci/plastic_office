@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.26)
 
-project(glad)
+project(glad LANGUAGES C)
 
 add_library(glad STATIC
   include/glad/glad.h
