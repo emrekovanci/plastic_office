@@ -88,6 +88,7 @@ add_custom_command(
 # --------------------------------------------------------------
 add_executable(test_font tests/renderer/test_font.c)
 target_link_libraries(test_font PRIVATE game_lib)
+set_target_properties(test_font PROPERTIES EXCLUDE_FROM_ALL TRUE)
 sss_apply_dev_flags(test_font)
 
 # ---------------
