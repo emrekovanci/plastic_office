@@ -21,7 +21,7 @@
 - https://github.com/libsdl-org/SDL/issues/12791
 - https://gamedev.stackexchange.com/questions/49032/8-directional-movement-maintain-vertical-position
 
-### Updating Submodules
+### Update & Sync Submodules
 
 ```bash
 cd vendor/<submodule-name>
@@ -31,6 +31,10 @@ git checkout <tags>
 cd ../..
 git add vendor/<submodule-name>
 git commit -m "pin <submodule-name> to <tag>"
+```
+
+```bash
+git pull --recurse-submodules
 ```
 
 ### CMake Analysis
