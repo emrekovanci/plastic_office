@@ -45,7 +45,7 @@ add_subdirectory(vendor/Unity EXCLUDE_FROM_ALL)
 # ------------
 # game library
 # ------------
-add_library(game_lib STATIC
+add_library(game_core STATIC
   vendor/stb/stb_image.c
   vendor/stb/stb_ds.c
   color.h
@@ -63,9 +63,9 @@ add_library(game_lib STATIC
   window.h window.c
   renderer.h renderer.c
 )
-target_link_libraries(game_lib PUBLIC glad SDL3::SDL3 cglm_headers freetype)
-target_include_directories(game_lib PUBLIC . vendor/stb)
-sss_apply_dev_flags(game_lib)
+target_link_libraries(game_core PUBLIC glad SDL3::SDL3 cglm_headers freetype)
+target_include_directories(game_core PUBLIC . vendor/stb)
+sss_apply_dev_flags(game_core)
 
 # ---------------
 # game executable
@@ -75,7 +75,7 @@ if(WIN32 AND NOT BUILD_CONSOLE)
 else()
   add_executable(app main.c)
 endif()
-target_link_libraries(app PRIVATE game_lib)
+target_link_libraries(app PRIVATE game_core)
 sss_apply_dev_flags(app)
 
 add_custom_command(
@@ -87,7 +87,7 @@ add_custom_command(
 # font tests (standalone sample binary, not part of ctest suite)
 # --------------------------------------------------------------
 add_executable(test_font tests/renderer/test_font.c)
-target_link_libraries(test_font PRIVATE game_lib)
+target_link_libraries(test_font PRIVATE game_core)
 set_target_properties(test_font PROPERTIES EXCLUDE_FROM_ALL TRUE)
 sss_apply_dev_flags(test_font)
 
@@ -102,7 +102,7 @@ add_executable(tests
   tests/test_player.c
   tests/main.c
 )
-target_link_libraries(tests PRIVATE unity game_lib)
+target_link_libraries(tests PRIVATE unity game_core)
 set_target_properties(tests PROPERTIES EXCLUDE_FROM_ALL TRUE)
 sss_apply_dev_flags(tests)
 
