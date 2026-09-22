@@ -1,7 +1,6 @@
 #include "camera.h"
 #include "constants.h"
 #include "utils.h"
-#include <SDL3/SDL_stdinc.h>
 
 void camera_init(Camera *cam)
 {
@@ -47,7 +46,7 @@ void camera_proj(const Camera *cam, mat4 out)
 void camera_set_zoom(Camera *cam, float dir)
 {
     const float zoom_factor = (dir > 0) ? CAMERA_ZOOM_STEP : (1.0f / CAMERA_ZOOM_STEP);
-    cam->zoom_target = SDL_clamp(cam->zoom_target * zoom_factor, camera_min_zoom(cam), camera_max_zoom(cam));
+    cam->zoom_target = clampf(cam->zoom_target * zoom_factor, camera_min_zoom(cam), camera_max_zoom(cam));
 }
 
 float camera_min_zoom(const Camera *cam)

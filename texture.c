@@ -1,7 +1,8 @@
 #include "texture.h"
 
 #include <glad/glad.h>
-#include <SDL3/SDL.h>
+#include <SDL3/SDL_log.h>
+#include <SDL3/SDL_stdinc.h>
 #include <stb_image.h>
 
 bool texture_load(Texture *out, const char *path)

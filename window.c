@@ -1,4 +1,5 @@
 #include <glad/glad.h>
+#include <SDL3/SDL_log.h>
 #include "window.h"
 #include "constants.h"
 
