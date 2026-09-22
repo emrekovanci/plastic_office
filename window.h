@@ -2,7 +2,7 @@
 #define WINDOW_H
 
 #include <stdbool.h>
-#include <SDL3/SDL.h>
+#include <SDL3/SDL_video.h>
 
 typedef struct WindowConfig WindowConfig;
 struct WindowConfig {

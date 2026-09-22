@@ -1,7 +1,8 @@
 #include "shader.h"
 
 #include <glad/glad.h>
-#include <SDL3/SDL.h>
+#include <SDL3/SDL_iostream.h>
+#include <SDL3/SDL_log.h>
 
 static const char *FALLBACK_VERT_SRC =
     "#version 330 core\n"
