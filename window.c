@@ -1,6 +1,7 @@
 #include <glad/glad.h>
-#include <SDL3/SDL_log.h>
 #include "window.h"
+
+#include <SDL3/SDL_log.h>
 #include "constants.h"
 
 static void GLAPIENTRY gl_debug_callback(

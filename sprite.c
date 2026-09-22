@@ -1,6 +1,6 @@
+#include <glad/glad.h>
 #include "sprite.h"
 
-#include <glad/glad.h>
 #include <cglm/cglm.h>
 #include "vertex.h"
 

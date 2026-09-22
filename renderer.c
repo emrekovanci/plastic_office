@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include "renderer.h"
+
 #include <cglm/cglm.h>
 #include "constants.h"
 

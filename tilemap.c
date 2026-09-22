@@ -1,6 +1,6 @@
+#include <glad/glad.h>
 #include "tilemap.h"
 
-#include <glad/glad.h>
 #include <SDL3/SDL.h>
 #include <cglm/cglm.h>
 #include "constants.h"
