@@ -5,7 +5,6 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_log.h>
 #include <cglm/cglm.h>
-#include "constants.h"
 #include "vertex.h"
 
 typedef struct TilemapLayerDef TilemapLayerDef;
