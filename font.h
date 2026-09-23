@@ -4,7 +4,6 @@
 #include "texture.h"
 #include "shader.h"
 #include "color.h"
-#define STBDS_NO_SHORT_NAMES
 #include <stb_ds.h>
 #include <stdint.h>
 #include <ft2build.h>

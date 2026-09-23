@@ -1,7 +1,9 @@
 #include <glad/glad.h>
 #include "tilemap.h"
 
-#include <SDL3/SDL.h>
+#include <SDL3/SDL_iostream.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_log.h>
 #include <cglm/cglm.h>
 #include "constants.h"
 
