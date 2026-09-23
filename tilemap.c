@@ -68,6 +68,50 @@ static void tilemap_layer_upload(TilemapLayer *layer, Vertex *vertices, int vert
     glEnableVertexAttribArray(2);
 }
 
+static void tilemap_layer_build_mesh(TilemapLayer *layer, const int *map, Vertex *vertices, unsigned int *indices, int *out_vertex_count, int *out_index_count)
+{
+    const int cols = layer->texture.width / TILE_SIZE;
+    const int rows = layer->texture.height / TILE_SIZE;
+    int v = 0;
+    int i = 0;
+
+    for (int y = 0; y < MAP_ROWS; ++y) {
+        for (int x = 0; x < MAP_COLS; ++x) {
+            const int tile_id = map[TILE_INDEX(x, y)];
+            if (tile_id < 0)
+                continue;
+
+            float x0 = (float)x * TILE_SIZE;
+            float y0 = (float)y * TILE_SIZE;
+            float x1 = x0 + TILE_SIZE;
+            float y1 = y0 + TILE_SIZE;
+
+            float u0, v0, u1, v1;
+            tile_uv(rows, cols, tile_id, &u0, &v0, &u1, &v1);
+
+            // counter-clockwise vertices and indices order
+            vertices[v + 0] = (Vertex){ x0, y0, 0, 1, 1, 1, u0, v0 }; // bottom-left
+            vertices[v + 1] = (Vertex){ x1, y0, 0, 1, 1, 1, u1, v0 }; // bottom-right
+            vertices[v + 2] = (Vertex){ x1, y1, 0, 1, 1, 1, u1, v1 }; // top-right
+            vertices[v + 3] = (Vertex){ x0, y1, 0, 1, 1, 1, u0, v1 }; // top-left
+            indices[i + 0] = v + 0;
+            indices[i + 1] = v + 1;
+            indices[i + 2] = v + 2;
+            indices[i + 3] = v + 0;
+            indices[i + 4] = v + 2;
+            indices[i + 5] = v + 3;
+
+            v += 4;
+            i += 6;
+
+            layer->tiles[TILE_INDEX(x, y)] = tile_id;
+        }
+    }
+
+    *out_vertex_count = v;
+    *out_index_count = i;
+}
+
 bool tilemap_read(const char *path, int *map, int w, int h)
 {
     size_t sz = 0;
@@ -125,67 +169,31 @@ bool tilemap_read(const char *path, int *map, int w, int h)
 
 bool tilemap_init(Tilemap *out)
 {
-    Vertex *vertices = SDL_malloc(MAP_COLS * MAP_ROWS * 4 * sizeof(Vertex));
-    unsigned int *indices = SDL_malloc(MAP_COLS * MAP_ROWS * 6 * sizeof(unsigned int));
+    Vertex vertices[MAP_COLS * MAP_ROWS * 4];
+    unsigned int indices[MAP_COLS * MAP_ROWS * 6];
 
     for (int l = 0; l < MAP_LAYERS; ++l) {
         TilemapLayer *layer = &out->layers[l];
 
-        if (!texture_load(&layer->texture, LAYER_DEFS[l].texture))
-            return false;
-
+        // -1 = empty tile, (no tile drawn / no collision)
         for (int k = 0; k < MAP_COLS * MAP_ROWS; ++k)
             layer->tiles[k] = -1;
+
+        if (!texture_load(&layer->texture, LAYER_DEFS[l].texture))
+            return false;
 
         int map[MAP_COLS * MAP_ROWS] = {0};
         if (!tilemap_read(LAYER_DEFS[l].csv, map, MAP_COLS, MAP_ROWS))
             return false;
 
-        const int cols = layer->texture.width / TILE_SIZE;
-        const int rows = layer->texture.height / TILE_SIZE;
-        int v = 0;
-        int i = 0;
+        int vertex_count = 0;
+        int index_count = 0;
+        tilemap_layer_build_mesh(layer, map, vertices, indices, &vertex_count, &index_count);
 
-        for (int y = 0; y < MAP_ROWS; ++y) {
-            for (int x = 0; x < MAP_COLS; ++x) {
-                const int tile_id = map[TILE_INDEX(x, y)];
-                if (tile_id < 0)
-                    continue;
-
-                float x0 = (float)x * TILE_SIZE;
-                float y0 = (float)y * TILE_SIZE;
-                float x1 = x0 + TILE_SIZE;
-                float y1 = y0 + TILE_SIZE;
-
-                float u0, v0, u1, v1;
-                tile_uv(rows, cols, tile_id, &u0, &v0, &u1, &v1);
-
-                // counter-clockwise vertices and indices order
-                vertices[v + 0] = (Vertex){ x0, y0, 0, 1, 1, 1, u0, v0 }; // bottom-left
-                vertices[v + 1] = (Vertex){ x1, y0, 0, 1, 1, 1, u1, v0 }; // bottom-right
-                vertices[v + 2] = (Vertex){ x1, y1, 0, 1, 1, 1, u1, v1 }; // top-right
-                vertices[v + 3] = (Vertex){ x0, y1, 0, 1, 1, 1, u0, v1 }; // top-left
-                indices[i + 0] = v + 0;
-                indices[i + 1] = v + 1;
-                indices[i + 2] = v + 2;
-                indices[i + 3] = v + 0;
-                indices[i + 4] = v + 2;
-                indices[i + 5] = v + 3;
-
-                v += 4;
-                i += 6;
-
-                layer->tiles[TILE_INDEX(x, y)] = tile_id;
-            }
-        }
-
-        layer->index_count = i;
+        layer->index_count = index_count;
         layer->visible = (l != COLLISION_LAYER_INDEX);
-        tilemap_layer_upload(layer, vertices, v, indices, i);
+        tilemap_layer_upload(layer, vertices, vertex_count, indices, index_count);
     }
-
-    SDL_free(vertices);
-    SDL_free(indices);
 
     return true;
 }
