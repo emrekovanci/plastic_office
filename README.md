@@ -1,6 +1,6 @@
 ### TODOs
 
-- Shader uniform caching
+- Shader uniform caching & hot reloading
 - Uniform Buffer Objects for model & projection matrices
 - Cross platform asset paths
 
