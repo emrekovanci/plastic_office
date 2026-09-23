@@ -6,7 +6,7 @@
 void test_collision_solid_tile(void)
 {
     Tilemap t = {0};
-    t.collision[0] = 1;
+    t.layers[COLLISION_LAYER_INDEX].tiles[0] = 1;
 
     TEST_ASSERT_TRUE(tilemap_has_collision(&t, 0, 0));
 }
@@ -14,7 +14,7 @@ void test_collision_solid_tile(void)
 void test_collision_empty_tile(void)
 {
     Tilemap t = {0};
-    t.collision[0] = -1;
+    t.layers[COLLISION_LAYER_INDEX].tiles[0] = -1;
 
     TEST_ASSERT_FALSE(tilemap_has_collision(&t, 0, 0));
 }
@@ -30,7 +30,7 @@ void test_collision_any_zero_value_is_solid(void)
 void test_collision_any_positive_value_is_solid(void)
 {
     Tilemap t = {0};
-    t.collision[0] = 99;
+    t.layers[COLLISION_LAYER_INDEX].tiles[0] = 99;
 
     TEST_ASSERT_TRUE(tilemap_has_collision(&t, 0, 0));
 }
@@ -38,8 +38,8 @@ void test_collision_any_positive_value_is_solid(void)
 void test_collision_cells_are_independent(void)
 {
     Tilemap t = {0};
-    t.collision[0] = 1;
-    t.collision[1] = -1;
+    t.layers[COLLISION_LAYER_INDEX].tiles[0] = 1;
+    t.layers[COLLISION_LAYER_INDEX].tiles[1] = -1;
 
     TEST_ASSERT_TRUE(tilemap_has_collision(&t, 0, 0));
     TEST_ASSERT_FALSE(tilemap_has_collision(&t, 1, 0));
@@ -64,8 +64,8 @@ void test_collision_out_of_bounds_positive(void)
 void test_collision_boundary_coords_are_valid(void)
 {
     Tilemap t = {0};
-    t.collision[0] = 1;
-    t.collision[MAP_COLS * MAP_ROWS - 1] = 1;
+    t.layers[COLLISION_LAYER_INDEX].tiles[0] = 1;
+    t.layers[COLLISION_LAYER_INDEX].tiles[MAP_COLS * MAP_ROWS - 1] = 1;
 
     TEST_ASSERT_TRUE(tilemap_has_collision(&t, 0, 0));
     TEST_ASSERT_TRUE(tilemap_has_collision(&t, MAP_COLS - 1, MAP_ROWS - 1));

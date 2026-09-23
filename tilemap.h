@@ -16,10 +16,8 @@ struct TilemapLayerDef {
 
 typedef struct TilemapLayer TilemapLayer;
 struct TilemapLayer {
-    Vertex vertices[MAP_COLS * MAP_ROWS * 4];
-    unsigned int indices[MAP_COLS * MAP_ROWS * 6];
     Texture texture;
-    int vertex_count;
+    int tiles[MAP_COLS * MAP_ROWS];
     int index_count;
     unsigned int vao, vbo, ebo;
     bool visible;
@@ -28,7 +26,6 @@ struct TilemapLayer {
 typedef struct Tilemap Tilemap;
 struct Tilemap {
     TilemapLayer layers[MAP_LAYERS];
-    int collision[MAP_COLS * MAP_ROWS];
 };
 
 bool tilemap_read(const char *path, int *map, int w, int h);

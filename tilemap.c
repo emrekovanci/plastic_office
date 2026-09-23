@@ -34,7 +34,7 @@ static void tile_uv(int rows, int cols, int tile_id, float *u0, float *v0, float
     *v1 = (float)(row + 1.0f) / rows;
 }
 
-static void tilemap_layer_upload(TilemapLayer *layer)
+static void tilemap_layer_upload(TilemapLayer *layer, Vertex *vertices, int vertex_count, unsigned int *indices, int index_count)
 {
     glGenVertexArrays(1, &layer->vao);
     glGenBuffers(1, &layer->vbo);
@@ -43,14 +43,14 @@ static void tilemap_layer_upload(TilemapLayer *layer)
 
     glBindBuffer(GL_ARRAY_BUFFER, layer->vbo);
     glBufferData(GL_ARRAY_BUFFER,
-                 layer->vertex_count * sizeof(Vertex),
-                 layer->vertices,
+                 vertex_count * sizeof(Vertex),
+                 vertices,
                  GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, layer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                 layer->index_count * sizeof(unsigned int),
-                 layer->indices,
+                 index_count * sizeof(unsigned int),
+                 indices,
                  GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
@@ -118,11 +118,17 @@ bool tilemap_read(const char *path, int *map, int w, int h)
 
 bool tilemap_init(Tilemap *out)
 {
+    Vertex *vertices = SDL_malloc(MAP_COLS * MAP_ROWS * 4 * sizeof(Vertex));
+    unsigned int *indices = SDL_malloc(MAP_COLS * MAP_ROWS * 6 * sizeof(unsigned int));
+
     for (int l = 0; l < MAP_LAYERS; ++l) {
         TilemapLayer *layer = &out->layers[l];
 
         if (!texture_load(&layer->texture, LAYER_DEFS[l].texture))
             return false;
+
+        for (int k = 0; k < MAP_COLS * MAP_ROWS; ++k)
+            layer->tiles[k] = -1;
 
         int map[MAP_COLS * MAP_ROWS] = {0};
         if (!tilemap_read(LAYER_DEFS[l].csv, map, MAP_COLS, MAP_ROWS))
@@ -148,30 +154,31 @@ bool tilemap_init(Tilemap *out)
                 tile_uv(rows, cols, tile_id, &u0, &v0, &u1, &v1);
 
                 // counter-clockwise vertices and indices order
-                layer->vertices[v + 0] = (Vertex){ x0, y0, 0, 1, 1, 1, u0, v0 }; // bottom-left
-                layer->vertices[v + 1] = (Vertex){ x1, y0, 0, 1, 1, 1, u1, v0 }; // bottom-right
-                layer->vertices[v + 2] = (Vertex){ x1, y1, 0, 1, 1, 1, u1, v1 }; // top-right
-                layer->vertices[v + 3] = (Vertex){ x0, y1, 0, 1, 1, 1, u0, v1 }; // top-left
-                layer->indices[i + 0] = v + 0;
-                layer->indices[i + 1] = v + 1;
-                layer->indices[i + 2] = v + 2;
-                layer->indices[i + 3] = v + 0;
-                layer->indices[i + 4] = v + 2;
-                layer->indices[i + 5] = v + 3;
+                vertices[v + 0] = (Vertex){ x0, y0, 0, 1, 1, 1, u0, v0 }; // bottom-left
+                vertices[v + 1] = (Vertex){ x1, y0, 0, 1, 1, 1, u1, v0 }; // bottom-right
+                vertices[v + 2] = (Vertex){ x1, y1, 0, 1, 1, 1, u1, v1 }; // top-right
+                vertices[v + 3] = (Vertex){ x0, y1, 0, 1, 1, 1, u0, v1 }; // top-left
+                indices[i + 0] = v + 0;
+                indices[i + 1] = v + 1;
+                indices[i + 2] = v + 2;
+                indices[i + 3] = v + 0;
+                indices[i + 4] = v + 2;
+                indices[i + 5] = v + 3;
 
                 v += 4;
                 i += 6;
+
+                layer->tiles[TILE_INDEX(x, y)] = tile_id;
             }
         }
 
-        layer->vertex_count = v;
         layer->index_count = i;
-        tilemap_layer_upload(layer);
         layer->visible = true;
+        tilemap_layer_upload(layer, vertices, v, indices, i);
     }
 
-    if (!tilemap_read(LAYER_DEFS[COLLISION_LAYER_INDEX].csv, out->collision, MAP_COLS, MAP_ROWS))
-        return false;
+    SDL_free(vertices);
+    SDL_free(indices);
 
     out->layers[COLLISION_LAYER_INDEX].visible = false;
     return true;
@@ -201,7 +208,7 @@ bool tilemap_has_collision(Tilemap *t, int x, int y)
     if (x < 0 || x >= MAP_COLS || y < 0 || y >= MAP_ROWS)
         return false;
 
-    return t->collision[TILE_INDEX(x, y)] >= 0;
+    return t->layers[COLLISION_LAYER_INDEX].tiles[TILE_INDEX(x, y)] >= 0;
 }
 
 void tilemap_destroy(Tilemap *t)
