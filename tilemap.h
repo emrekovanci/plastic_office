@@ -16,8 +16,8 @@ struct TilemapLayerDef {
 
 typedef struct TilemapLayer TilemapLayer;
 struct TilemapLayer {
-    Texture texture;
     int tiles[MAP_COLS * MAP_ROWS];
+    Texture texture;
     int index_count;
     unsigned int vao, vbo, ebo;
     bool visible;

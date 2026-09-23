@@ -173,14 +173,13 @@ bool tilemap_init(Tilemap *out)
         }
 
         layer->index_count = i;
-        layer->visible = true;
+        layer->visible = (l != COLLISION_LAYER_INDEX);
         tilemap_layer_upload(layer, vertices, v, indices, i);
     }
 
     SDL_free(vertices);
     SDL_free(indices);
 
-    out->layers[COLLISION_LAYER_INDEX].visible = false;
     return true;
 }
 
