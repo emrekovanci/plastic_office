@@ -47,6 +47,7 @@ static GLuint shader_compile(GLenum type, const char *src)
         char log[512];
         glGetShaderInfoLog(shader, sizeof(log), NULL, log);
         SDL_Log("Failed to compile shader: %s", log);
+        glDeleteShader(shader);
         return 0;
     }
     return shader;
@@ -54,20 +55,21 @@ static GLuint shader_compile(GLenum type, const char *src)
 
 static GLuint shader_link(GLuint vert, GLuint frag)
 {
-    GLuint prog = glCreateProgram();
-    glAttachShader(prog, vert);
-    glAttachShader(prog, frag);
-    glLinkProgram(prog);
+    GLuint shader_program = glCreateProgram();
+    glAttachShader(shader_program, vert);
+    glAttachShader(shader_program, frag);
+    glLinkProgram(shader_program);
 
     GLint ok = 0;
-    glGetProgramiv(prog, GL_LINK_STATUS, &ok);
+    glGetProgramiv(shader_program, GL_LINK_STATUS, &ok);
     if (!ok) {
         char log[512];
-        glGetProgramInfoLog(prog, sizeof(log), NULL, log);
+        glGetProgramInfoLog(shader_program, sizeof(log), NULL, log);
         SDL_Log("Failed to link shader program: %s", log);
+        glDeleteProgram(shader_program);
         return 0;
     }
-    return prog;
+    return shader_program;
 }
 
 static bool shader_load_fallback(Shader *s)
