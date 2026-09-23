@@ -6,6 +6,13 @@
 #include <SDL3/SDL_log.h>
 #include <cglm/cglm.h>
 #include "constants.h"
+#include "vertex.h"
+
+typedef struct TilemapLayerDef TilemapLayerDef;
+struct TilemapLayerDef {
+    const char *csv;
+    const char *texture;
+};
 
 static const TilemapLayerDef LAYER_DEFS[MAP_LAYERS] = {
     { "assets/side_Layer_1_Ground.csv",    "assets/Ground.png" },
@@ -183,7 +190,7 @@ bool tilemap_init(Tilemap *out)
     return true;
 }
 
-void tilemap_render(Tilemap *t, Shader *s)
+void tilemap_render(Tilemap *tm, Shader *s)
 {
     // TODO: no need to calculate every frame, tilemap doesnt move
     mat4 model = GLM_MAT4_IDENTITY_INIT;
@@ -192,7 +199,7 @@ void tilemap_render(Tilemap *t, Shader *s)
     shader_set_mat4(s, "model", (float*)model);
 
     for (int i = 0; i < MAP_LAYERS; ++i) {
-        TilemapLayer *layer = &t->layers[i];
+        TilemapLayer *layer = &tm->layers[i];
         if (!layer->visible)
             continue;
 
@@ -202,18 +209,18 @@ void tilemap_render(Tilemap *t, Shader *s)
     }
 }
 
-bool tilemap_has_collision(Tilemap *t, int x, int y)
+bool tilemap_has_collision(Tilemap *tm, int x, int y)
 {
     if (x < 0 || x >= MAP_COLS || y < 0 || y >= MAP_ROWS)
         return false;
 
-    return t->layers[COLLISION_LAYER_INDEX].tiles[TILE_INDEX(x, y)] >= 0;
+    return tm->layers[COLLISION_LAYER_INDEX].tiles[TILE_INDEX(x, y)] >= 0;
 }
 
-void tilemap_destroy(Tilemap *t)
+void tilemap_destroy(Tilemap *tm)
 {
     for (int i = 0; i < MAP_LAYERS; ++i) {
-        TilemapLayer *layer = &t->layers[i];
+        TilemapLayer *layer = &tm->layers[i];
 
         glDeleteVertexArrays(1, &layer->vao);
         glDeleteBuffers(1, &layer->vbo);
@@ -222,8 +229,8 @@ void tilemap_destroy(Tilemap *t)
     }
 }
 
-void tilemap_toggle_collision_visibility(Tilemap *t)
+void tilemap_toggle_collision_visibility(Tilemap *tm)
 {
-    TilemapLayer *collision_layer = &t->layers[COLLISION_LAYER_INDEX];
+    TilemapLayer *collision_layer = &tm->layers[COLLISION_LAYER_INDEX];
     collision_layer->visible = !collision_layer->visible;
 }
