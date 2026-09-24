@@ -5,15 +5,14 @@
 #include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_mouse.h>
 
-typedef struct Input Input;
-struct Input {
+typedef struct Input {
     bool prev_kb[SDL_SCANCODE_COUNT];
     bool curr_kb[SDL_SCANCODE_COUNT];
     float mouse_x;
     float mouse_y;
     SDL_MouseButtonFlags prev_mouse;
     SDL_MouseButtonFlags curr_mouse;
-};
+} Input;
 
 void input_update(Input *input);
 

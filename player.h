@@ -28,8 +28,7 @@
 #define PLAYER_JUMP_BUFFER        0.18f
 #define PLAYER_EPSILON            0.001f
 
-typedef struct Player Player;
-struct Player {
+typedef struct Player {
 
     Sprite sprite;
 
@@ -74,7 +73,7 @@ struct Player {
 
     // debugging
     bool render_hitbox;
-};
+} Player;
 
 void player_init(Player *player);
 void player_destroy(Player *player);

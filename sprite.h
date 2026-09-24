@@ -4,12 +4,11 @@
 #include "texture.h"
 #include "shader.h"
 
-typedef struct Sprite Sprite;
-struct Sprite {
+typedef struct Sprite {
     unsigned int vao;
     unsigned int vbo;
     unsigned int ebo;
-};
+} Sprite;
 
 void sprite_create(Sprite *sprite);
 

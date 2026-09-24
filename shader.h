@@ -4,10 +4,9 @@
 #include <stdbool.h>
 #include "color.h"
 
-typedef struct Shader Shader;
-struct Shader {
+typedef struct Shader {
     unsigned int id;
-};
+} Shader;
 
 bool shader_load(Shader *s, const char *vert_path, const char *frag_path);
 void shader_destroy(Shader *s);

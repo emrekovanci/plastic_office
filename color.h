@@ -1,13 +1,12 @@
 #ifndef COLOR_H
 #define COLOR_H
 
-typedef struct Color Color;
-struct Color {
+typedef struct Color {
     unsigned char r;
     unsigned char g;
     unsigned char b;
     unsigned char a;
-};
+} Color;
 
 #define WHITE   (Color){ 255, 255, 255, 255 }
 #define BLACK   (Color){ 0,   0,   0,   255 }

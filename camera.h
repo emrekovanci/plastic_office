@@ -3,8 +3,7 @@
 
 #include <cglm/cglm.h>
 
-typedef struct Camera Camera;
-struct Camera {
+typedef struct Camera {
     int viewport_w;
     int viewport_h;
 
@@ -12,7 +11,7 @@ struct Camera {
     float y;
     float zoom;
     float zoom_target;
-};
+} Camera;
 
 void camera_init(Camera *cam);
 void camera_update(Camera *cam, float dt, float target_x);

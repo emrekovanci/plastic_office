@@ -7,10 +7,9 @@
 #include "sprite.h"
 #include "texture.h"
 
-typedef struct RenderState RenderState;
-struct RenderState {
+typedef struct RenderState {
     bool wireframe_enabled;
-};
+} RenderState;
 
 void renderer_init(RenderState *rs);
 void renderer_toggle_wireframe(RenderState *rs);

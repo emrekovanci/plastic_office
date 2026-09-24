@@ -4,20 +4,18 @@
 #include <stdbool.h>
 #include <SDL3/SDL_video.h>
 
-typedef struct WindowConfig WindowConfig;
-struct WindowConfig {
+typedef struct WindowConfig {
     int width;
     int height;
     bool fullscreen;
     bool vsync;
     bool debugging;
-};
+} WindowConfig;
 
-typedef struct Window Window;
-struct Window {
+typedef struct Window {
     SDL_Window *handle;
     SDL_GLContext gl_context;
-};
+} Window;
 
 bool window_init(Window *win, const WindowConfig *config);
 void window_destroy(Window *win);

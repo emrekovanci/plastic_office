@@ -4,12 +4,11 @@
 #include <stdbool.h>
 #include "color.h"
 
-typedef struct Texture Texture;
-struct Texture {
+typedef struct Texture {
     unsigned int id;
     int width;
     int height;
-};
+} Texture;
 
 bool texture_load(Texture *out, const char *path);
 void texture_destroy(Texture *tex);

@@ -7,11 +7,10 @@
 #include <cglm/cglm.h>
 #include "vertex.h"
 
-typedef struct TilemapLayerDef TilemapLayerDef;
-struct TilemapLayerDef {
+typedef struct TilemapLayerDef {
     const char *csv;
     const char *texture;
-};
+} TilemapLayerDef;
 
 static const TilemapLayerDef LAYER_DEFS[MAP_LAYERS] = {
     { "assets/side_Layer_1_Ground.csv",    "assets/Ground.png" },

@@ -12,23 +12,20 @@
 #define FONT_BATCH_SIZE    256
 #define FONT_ATLAS_PADDING 1
 
-typedef struct Glyph Glyph;
-struct Glyph {
+typedef struct Glyph {
     float u0, v0;
     float u1, v1;
     int width, height;
     int bearing_x, bearing_y;
     long advance;
-};
+} Glyph;
 
-typedef struct GlyphEntry GlyphEntry;
-struct GlyphEntry {
+typedef struct GlyphEntry {
     uint32_t key; // codepoint
     Glyph value;  // glyph
-};
+} GlyphEntry;
 
-typedef struct Font Font;
-struct Font {
+typedef struct Font {
     GlyphEntry *glyph_cache;
     Texture atlas;
     unsigned int vao;
@@ -39,7 +36,7 @@ struct Font {
     bool kerning;
     FT_Library ft;
     FT_Face face;
-};
+} Font;
 
 bool font_load(Font *font, const char *path, unsigned int size, int atlas_dim);
 void font_destroy(Font *font);
