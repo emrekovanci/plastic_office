@@ -276,7 +276,7 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
 
 void player_update(Player *player, float dt, Input *input, float alpha, Tilemap *tilemap)
 {
-    if (input_key_pressed(input, SDL_SCANCODE_SPACE))
+    if (input_key_pressed(input, SDL_SCANCODE_SPACE) || input_key_pressed(input, SDL_SCANCODE_UP))
         player->jump_buffer_timer = PLAYER_JUMP_BUFFER;
 
     if (player->is_landing) {
