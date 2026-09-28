@@ -62,6 +62,7 @@ add_library(game_core STATIC
   font.h font.c
   window.h window.c
   renderer.h renderer.c
+  parallax.h parallax.c
 )
 target_link_libraries(game_core PUBLIC glad SDL3::SDL3 cglm_headers freetype)
 target_include_directories(game_core PUBLIC . vendor/stb)

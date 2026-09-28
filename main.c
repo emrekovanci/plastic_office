@@ -15,6 +15,7 @@
 #include "constants.h"
 #include "font.h"
 #include "renderer.h"
+#include "parallax.h"
 
 // general
 Shader g_shader_sprite;
@@ -240,9 +241,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     // render background
     // -----------------
     shader_bind(&g_shader_default);
-    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.0f, &g_spr_bg, &g_tex_sky);
-    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.01f, &g_spr_bg, &g_tex_bg1);
-    renderer_draw_parallax_layer(&g_shader_default, &g_camera, 0.2f, &g_spr_bg, &g_tex_bg2);
+    parallax_render(&g_shader_default, &g_camera, 0.0f, &g_spr_bg, &g_tex_sky);
+    parallax_render(&g_shader_default, &g_camera, 0.01f, &g_spr_bg, &g_tex_bg1);
+    parallax_render(&g_shader_default, &g_camera, 0.2f, &g_spr_bg, &g_tex_bg2);
 
     // --------------
     // render tilemap
