@@ -86,7 +86,7 @@ static void render_debug_panel()
 typedef struct AppContext AppContext;
 struct AppContext {
     Input input;
-    RenderState render_state;
+    Renderer renderer;
     bool debug_overlay;
     float timescale;
     Uint64 last_tick;
@@ -154,7 +154,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     // -------------------
     // initialize renderer
     // -------------------
-    renderer_init(&app->render_state);
+    renderer_init(&app->renderer);
 
     // -----
     // scene
@@ -178,7 +178,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
     if (event->type == SDL_EVENT_KEY_DOWN && !event->key.repeat) {
         switch (event->key.key) {
-            case SDLK_F1: renderer_toggle_wireframe(&app->render_state); break;
+            case SDLK_F1: renderer_toggle_wireframe(&app->renderer); break;
             case SDLK_F2: tilemap_toggle_collision_visibility(&g_tilemap); break;
             case SDLK_F3: g_player.render_hitbox = !g_player.render_hitbox; break;
             case SDLK_F4: app->debug_overlay = !app->debug_overlay; break;

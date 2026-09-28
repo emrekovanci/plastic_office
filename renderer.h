@@ -7,12 +7,12 @@
 #include "sprite.h"
 #include "texture.h"
 
-typedef struct RenderState {
+typedef struct Renderer {
     bool wireframe_enabled;
-} RenderState;
+} Renderer;
 
-void renderer_init(RenderState *rs);
-void renderer_toggle_wireframe(RenderState *rs);
+void renderer_init(Renderer *renderer);
+void renderer_toggle_wireframe(Renderer *renderer);
 void renderer_clear(float r, float g, float b, float a);
 
 void renderer_viewport_resize(int width, int height, Camera *camera, Shader *shaders[], int shader_count);

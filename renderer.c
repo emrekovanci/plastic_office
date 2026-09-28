@@ -4,24 +4,24 @@
 #include <cglm/cglm.h>
 #include "constants.h"
 
-void renderer_init(RenderState *rs)
+void renderer_init(Renderer *renderer)
 {
-    rs->wireframe_enabled = false;
+    renderer->wireframe_enabled = false;
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void renderer_toggle_wireframe(RenderState *rs)
+void renderer_toggle_wireframe(Renderer *renderer)
 {
-    if (rs->wireframe_enabled) {
+    if (renderer->wireframe_enabled) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        rs->wireframe_enabled = false;
+        renderer->wireframe_enabled = false;
         return;
     }
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    rs->wireframe_enabled = true;
+    renderer->wireframe_enabled = true;
 }
 
 void renderer_clear(float r, float g, float b, float a)
