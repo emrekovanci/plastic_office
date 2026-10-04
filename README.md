@@ -62,3 +62,9 @@ cmake --build build
 cmake --build build --target tests
 ctest --test-dir build -V
 ```
+
+### Other Targets
+
+```
+cmake --build build --target test_font
+```
