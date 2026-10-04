@@ -67,7 +67,6 @@ static void render_debug_panel(AppContext *app)
 
 SDL_AppResult app_create(AppContext *app)
 {
-    app->timer.timescale = 1.0f;
     app->ui_scale = 1.0f;
     app->debug_overlay = true;
 
@@ -83,8 +82,6 @@ SDL_AppResult app_create(AppContext *app)
         SDL_Log("Failed to create window!");
         return SDL_APP_FAILURE;
     }
-
-    timer_init(&app->timer, FIXED_TIMESTEP);
 
     return SDL_APP_CONTINUE;
 }
@@ -146,6 +143,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     tilemap_init(&g_tilemap);
     player_init(&g_player);
 
+    timer_init(&app->timer, FIXED_TIMESTEP);
+    
     return SDL_APP_CONTINUE;
 }
 
