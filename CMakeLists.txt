@@ -51,6 +51,7 @@ add_library(game_core STATIC
   color.h
   constants.h
   vertex.h
+  timer.h timer.c
   utils.h utils.c
   shader.h shader.c
   texture.h texture.c

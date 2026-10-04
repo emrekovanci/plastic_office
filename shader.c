@@ -3,15 +3,18 @@
 
 #include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_log.h>
+#include "constants.h"
 
 static const char *FALLBACK_VERT_SRC =
     "#version 330 core\n"
     "layout(location = 0) in vec3 aPos;\n"
     "layout(location = 1) in vec3 aColor;\n"
     "layout(location = 2) in vec2 aTexCoord;\n"
+    "layout(std140) uniform Matrices {\n"
+    "    mat4 view;\n"
+    "    mat4 projection;\n"
+    "};\n"
     "uniform mat4 model;\n"
-    "uniform mat4 view;\n"
-    "uniform mat4 projection;\n"
     "out vec3 ourColor;\n"
     "out vec2 TexCoord;\n"
     "void main() {\n"
@@ -25,10 +28,24 @@ static const char *FALLBACK_FRAG_SRC =
     "out vec4 FragColor;\n"
     "in vec3 ourColor;\n"
     "in vec2 TexCoord;\n"
-    "uniform sampler2D texture1;\n"
+    "uniform sampler2D BaseTex;\n"
     "void main() {\n"
     "    FragColor = vec4(1.0, 0.0, 1.0, 1.0);\n"
     "}\n";
+
+static void shader_setup(GLuint program)
+{
+    // UBO matrices
+    const GLuint index = glGetUniformBlockIndex(program, "Matrices");
+    if (index != GL_INVALID_INDEX)
+        glUniformBlockBinding(program, index, UBO_BINDING_MATRICES);
+
+    // sampler: BaseTex always texture unit 0
+    glUseProgram(program);
+    const GLint tex = glGetUniformLocation(program, "BaseTex");
+    if (tex != -1)
+        glUniform1i(tex, 0);
+}
 
 static GLint loc(const Shader *s, const char *name)
 {
@@ -69,6 +86,8 @@ static GLuint shader_link(GLuint vert, GLuint frag)
         glDeleteProgram(shader_program);
         return 0;
     }
+
+    shader_setup(shader_program);
     return shader_program;
 }
 

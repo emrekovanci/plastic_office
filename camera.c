@@ -2,59 +2,50 @@
 #include "constants.h"
 #include "utils.h"
 
+#define CAMERA_MIN_TILES 8.0f              // closest
+#define CAMERA_MAX_TILES ((float)MAP_ROWS) // far away (whole map)
+
+static float camera_world_h(const Camera *cam)
+{
+    return cam->vt * TILE_RENDER_SIZE;
+}
+
 void camera_init(Camera *cam)
 {
     *cam = (Camera) {
-        .viewport_w = WINDOW_WIDTH,
-        .viewport_h = WINDOW_HEIGHT,
         .x = 0.0f,
         .y = 0.0f,
-        .zoom = 1.0f,
-        .zoom_target = 1.0f
+        .vt = CAMERA_MAX_TILES,
+        .vt_target = CAMERA_MAX_TILES
     };
 }
 
-void camera_update(Camera *cam, float dt, float target_x)
+void camera_update(Camera *cam, float dt, float target_x, float target_y)
 {
-    // zoom first
-    float zoom = lerpf(cam->zoom, cam->zoom_target, 1.0f - expf(-10.0f * dt));
-    cam->zoom = zoom;
+    cam->vt = lerpf(cam->vt, cam->vt_target, 1.0f - expf(-10.0f * dt));
 
-    // follow later
-    const float target_y = (cam->viewport_h * 0.5f) / cam->zoom;
+    if (fabsf(cam->vt - cam->vt_target) < 0.001f)
+        cam->vt = cam->vt_target;
+
     cam->x = target_x;
-    cam->y = target_y;
+    cam->y = target_y + camera_world_h(cam) * 0.5f;
 }
 
 void camera_view(const Camera *cam, mat4 out)
 {
     glm_mat4_identity(out);
-    glm_translate(out, (vec3) { cam->viewport_w * 0.5f, cam->viewport_h * 0.5f, 0.0f });
-    glm_scale(out, (vec3){ cam->zoom, cam->zoom, 1.0f });
     glm_translate(out, (vec3){ -cam->x, -cam->y, 0.0f });
 }
 
-void camera_proj(const Camera *cam, mat4 out)
+void camera_proj(const Camera *cam, int width, int height, mat4 out)
 {
-    glm_ortho(
-        0, (float)cam->viewport_w,
-        0, (float)cam->viewport_h,
-        -1, 1,
-        out);
+    const float hh = camera_world_h(cam) * 0.5f;
+    const float hw = hh * ((float)width / (float)height);
+    glm_ortho(-hw, hw, -hh, hh, -1, 1, out);
 }
 
-void camera_set_zoom(Camera *cam, float dir)
+void camera_zoom_step(Camera *cam, float dir)
 {
-    const float zoom_factor = (dir > 0) ? CAMERA_ZOOM_STEP : (1.0f / CAMERA_ZOOM_STEP);
-    cam->zoom_target = clampf(cam->zoom_target * zoom_factor, camera_min_zoom(cam), camera_max_zoom(cam));
-}
-
-float camera_min_zoom(const Camera *cam)
-{
-    return (float)cam->viewport_h / (MAP_ROWS * TILE_RENDER_SIZE);
-}
-
-float camera_max_zoom(const Camera *cam)
-{
-    return (float)cam->viewport_h / (CAMERA_MIN_VISIBLE_TILES * TILE_RENDER_SIZE);
+    const float step = (dir > 0) ? -1.0f : 1.0f;
+    cam->vt_target = clampf(cam->vt_target + step, CAMERA_MIN_TILES, CAMERA_MAX_TILES);
 }

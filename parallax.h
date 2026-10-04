@@ -2,10 +2,10 @@
 #define PARALLAX_H
 
 #include "shader.h"
-#include "camera.h"
 #include "texture.h"
 #include "sprite.h"
 
-void parallax_render(Shader *shader, Camera *camera, float factor, Sprite *sprite, Texture *texture);
+void parallax_render(Shader *shader, int vp_w, int vp_h, float scroll,
+                     Sprite *sprite, Texture *texture);
 
 #endif

@@ -4,22 +4,14 @@
 #include <cglm/cglm.h>
 
 typedef struct Camera {
-    int viewport_w;
-    int viewport_h;
-
-    float x;
-    float y;
-    float zoom;
-    float zoom_target;
+    float x, y;
+    float vt, vt_target; // visible tiles
 } Camera;
 
 void camera_init(Camera *cam);
-void camera_update(Camera *cam, float dt, float target_x);
+void camera_update(Camera *cam, float dt, float target_x, float target_y);
 void camera_view(const Camera *cam, mat4 out);
-void camera_proj(const Camera *cam, mat4 out);
-
-void camera_set_zoom(Camera *cam, float dir);
-float camera_min_zoom(const Camera *cam);
-float camera_max_zoom(const Camera *cam);
+void camera_proj(const Camera *cam, int width, int height, mat4 out);
+void camera_zoom_step(Camera *cam, float dir);
 
 #endif

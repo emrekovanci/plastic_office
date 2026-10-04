@@ -1,10 +1,8 @@
-#include <glad/glad.h>
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include <cglm/cglm.h>
-#include <stdarg.h>
 
+#include <stdarg.h>
 #include "window.h"
 #include "camera.h"
 #include "shader.h"
@@ -16,18 +14,12 @@
 #include "font.h"
 #include "renderer.h"
 #include "parallax.h"
+#include "timer.h"
 
 // general
-Shader g_shader_sprite;
-Shader g_shader_default;
 Camera g_camera;
 Tilemap g_tilemap;
 Player g_player;
-
-// text rendering
-float g_ui_scale = 1.0f;
-Font g_font;
-Shader g_shader_text;
 
 // backgrounds
 Texture g_tex_sky;
@@ -35,31 +27,20 @@ Texture g_tex_bg1;
 Texture g_tex_bg2;
 Sprite g_spr_bg;
 
-static void sync_vp(Window *win)
-{
-    int pw, ph;
-    window_get_pixel_size(win, &pw, &ph);
+typedef struct AppContext {
+    Timer timer;
+    Font font;
+    float ui_scale;
+    Shader shader_sprite;
+    Shader shader_default;
+    Shader shader_text;
+    Input input;
+    Renderer renderer;
+    bool debug_overlay;
+    Window window;
+} AppContext;
 
-    int lw, lh;
-    window_get_logical_size(win, &lw, &lh);
-
-    Shader *shaders[] = {
-        &g_shader_text,
-        &g_shader_default,
-        &g_shader_sprite
-    };
-    renderer_viewport_resize(pw, ph, &g_camera, shaders, 3);
-
-    // camera
-    g_camera.zoom = SDL_clamp(g_camera.zoom, camera_min_zoom(&g_camera), camera_max_zoom(&g_camera));
-    g_camera.zoom_target = g_camera.zoom;
-
-    // ui
-    g_ui_scale = (float)lh / UI_REFERENCE_HEIGHT;
-    SDL_Log("UI Scale: %f", g_ui_scale);
-}
-
-static void debug_line(float y, const char* fmt, ...)
+static void debug_line(AppContext *app, float y, const char* fmt, ...)
 {
     char buf[64];
 
@@ -68,32 +49,72 @@ static void debug_line(float y, const char* fmt, ...)
     SDL_vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
 
-    font_render_text(&g_font, &g_shader_text, buf,
-                     20.0f * g_ui_scale,
-                     y * g_ui_scale,
-                     1.0f * g_ui_scale, WHITE);
+    font_render_text(&app->font, &app->shader_text, buf,
+                     20.0f * app->ui_scale,
+                     y * app->ui_scale,
+                     1.0f * app->ui_scale, WHITE);
 }
 
-static void render_debug_panel()
+static void render_debug_panel(AppContext *app)
 {
-    debug_line(220.0f, "Zoom: %.4f", g_camera.zoom);
-    debug_line(180.0f, "DX: %.2f", g_player.dx);
-    debug_line(140.0f, "DY: %.2f", g_player.dy);
-    debug_line(100.0f, "Anim Frame: %d", g_player.anim_frame);
-    debug_line(60.0f, "Tile X: %.2f", g_player.cx + g_player.xr);
-    debug_line(20.0f, "Tile Y: %.2f", g_player.cy + g_player.yr);
+    debug_line(app, 220.0f, "Visible Tiles: %.4f", g_camera.vt);
+    debug_line(app, 180.0f, "DX: %.2f", g_player.dx);
+    debug_line(app, 140.0f, "DY: %.2f", g_player.dy);
+    debug_line(app, 100.0f, "Anim Frame: %d", g_player.anim_frame);
+    debug_line(app, 60.0f, "Tile X: %.2f", g_player.cx + g_player.xr);
+    debug_line(app, 20.0f, "Tile Y: %.2f", g_player.cy + g_player.yr);
 }
 
-typedef struct AppContext AppContext;
-struct AppContext {
-    Input input;
-    Renderer renderer;
-    bool debug_overlay;
-    float timescale;
-    Uint64 last_tick;
-    double accumulator;
-    Window window;
-};
+SDL_AppResult app_create(AppContext *app)
+{
+    app->timer.timescale = 1.0f;
+    app->ui_scale = 1.0f;
+    app->debug_overlay = true;
+
+    WindowConfig window_config = {
+        .width = WINDOW_WIDTH,
+        .height = WINDOW_HEIGHT,
+        .fullscreen = true,
+        .vsync = true,
+        .debugging = true
+    };
+
+    if (!window_init(&app->window, &window_config)) {
+        SDL_Log("Failed to create window!");
+        return SDL_APP_FAILURE;
+    }
+
+    timer_init(&app->timer, FIXED_TIMESTEP);
+
+    return SDL_APP_CONTINUE;
+}
+
+void app_destroy(AppContext *app)
+{
+    window_destroy(&app->window);
+}
+
+// loads neccesary assets
+SDL_AppResult app_load_assets(AppContext *app)
+{
+    font_load(&app->font, "assets/fonts/NotoSans-Medium.ttf", 32, 512);
+
+    shader_load(&app->shader_text, "assets/shaders/text_vs.glsl", "assets/shaders/text_fs.glsl");
+    shader_load(&app->shader_default, "assets/shaders/default_vs.glsl", "assets/shaders/default_fs.glsl");
+    shader_load(&app->shader_sprite, "assets/shaders/sprite_vs.glsl", "assets/shaders/sprite_fs.glsl");
+
+    return SDL_APP_CONTINUE;
+}
+
+// unload necceary assets
+void app_unload_assets(AppContext *app)
+{
+    shader_destroy(&app->shader_default);
+    shader_destroy(&app->shader_sprite);
+
+    font_destroy(&app->font);
+    shader_destroy(&app->shader_text);
+}
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
@@ -110,63 +131,21 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
     *appstate = app;
-    app->timescale = 1.0f;
-    app->debug_overlay = true;
 
-    // -----------------
-    // initialize window
-    // -----------------
-    WindowConfig window_config = {
-        .width = WINDOW_WIDTH,
-        .height = WINDOW_HEIGHT,
-        .fullscreen = true,
-        .vsync = true,
-        .debugging = true
-    };
-
-    if (!window_init(&app->window, &window_config)) {
-        SDL_Log("Failed to create window!");
+    if (app_create(app) != SDL_APP_CONTINUE)
         return SDL_APP_FAILURE;
-    }
 
-    app->last_tick = SDL_GetTicks();
-
-    // -------------
-    // asset loading
-    // -------------
-    font_load(&g_font, "assets/fonts/NotoSans-Medium.ttf", 32, 512);
+    app_load_assets(app);
     texture_load(&g_tex_sky, "assets/Sky.png");
     texture_load(&g_tex_bg1, "assets/Background_Layer1.png");
     texture_load(&g_tex_bg2, "assets/Background_Layer2.png");
     sprite_create(&g_spr_bg);
 
-    shader_load(&g_shader_text, "assets/shaders/text_vs.glsl", "assets/shaders/text_fs.glsl");
-    shader_bind(&g_shader_text);
-    shader_set_int(&g_shader_text, "texture1", 0);
-
-    shader_load(&g_shader_default, "assets/shaders/default_vs.glsl", "assets/shaders/default_fs.glsl");
-    shader_bind(&g_shader_default);
-    shader_set_int(&g_shader_default, "texture1", 0);
-
-    shader_load(&g_shader_sprite, "assets/shaders/sprite_vs.glsl", "assets/shaders/sprite_fs.glsl");
-    shader_bind(&g_shader_sprite);
-    shader_set_int(&g_shader_sprite, "texture1", 0);
-
-    // -------------------
-    // initialize renderer
-    // -------------------
     renderer_init(&app->renderer);
-
-    // -----
-    // scene
-    // -----
     camera_init(&g_camera);
     tilemap_init(&g_tilemap);
     player_init(&g_player);
 
-    sync_vp(&app->window);
-
-    SDL_Log("Viewport size: W: %d, H: %d", g_camera.viewport_w, g_camera.viewport_h);
     return SDL_APP_CONTINUE;
 }
 
@@ -183,10 +162,10 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             case SDLK_F2: tilemap_toggle_collision_visibility(&g_tilemap); break;
             case SDLK_F3: g_player.render_hitbox = !g_player.render_hitbox; break;
             case SDLK_F4: app->debug_overlay = !app->debug_overlay; break;
-            case SDLK_1: app->timescale = 1.0f; break;
-            case SDLK_2: app->timescale = 0.5f; break;
-            case SDLK_3: app->timescale = 0.1f; break;
-            case SDLK_4: app->timescale = 0.0f; break;
+            case SDLK_1: app->timer.timescale = 1.0f; break;
+            case SDLK_2: app->timer.timescale = 0.5f; break;
+            case SDLK_3: app->timer.timescale = 0.1f; break;
+            case SDLK_4: app->timer.timescale = 0.0f; break;
             case SDLK_RETURN:
                 if (event->key.mod & SDL_KMOD_ALT)
                     window_toggle_fullscreen(&app->window);
@@ -197,12 +176,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     }
 
     if (event->type == SDL_EVENT_MOUSE_WHEEL)
-        camera_set_zoom(&g_camera, event->wheel.y);
-
-    if (event->type == SDL_EVENT_WINDOW_RESIZED) {
-        sync_vp(&app->window);
-        SDL_Log("Window resized: W: %d, H: %d", event->window.data1, event->window.data2);
-    }
+        camera_zoom_step(&g_camera, event->wheel.y);
 
     return SDL_APP_CONTINUE;
 }
@@ -214,57 +188,44 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     // ---------
     // game loop
     // ---------
-    const Uint64 current_tick = SDL_GetTicks();
-    float dt = (float)(current_tick - app->last_tick) / SDL_MS_PER_SECOND;
-    dt = SDL_min(dt, 0.25f);
-    dt *= app->timescale;
-    app->last_tick = current_tick;
-    app->accumulator += dt;
-
+    float dt = timer_tick(&app->timer);
     input_update(&app->input);
 
-    while (app->accumulator >= FIXED_TIMESTEP) {
+    while (timer_step(&app->timer))
         player_fixed_update(&g_player, FIXED_TIMESTEP, &app->input, &g_tilemap);
-        app->accumulator -= FIXED_TIMESTEP;
+
+    const float alpha = timer_alpha(&app->timer);
+    player_update(&g_player, dt, &app->input, alpha, &g_tilemap);
+    camera_update(&g_camera, dt, g_player.render_xx, 0.0f);
+
+    // ---------
+    // rendering
+    // ---------
+    int w, h;
+    window_get_pixel_size(&app->window, &w, &h);
+    app->ui_scale = (float)h / UI_REFERENCE_HEIGHT;
+
+    // render background
+    renderer_begin(&app->renderer, w, h);
+    renderer_use_screen(&app->renderer, w, h);
+    shader_bind(&app->shader_default);
+    parallax_render(&app->shader_default, w, h, 0.0f, &g_spr_bg, &g_tex_sky);
+    parallax_render(&app->shader_default, w, h, g_camera.x * 0.01f, &g_spr_bg, &g_tex_bg1);
+    parallax_render(&app->shader_default, w, h, g_camera.x * 0.2f, &g_spr_bg, &g_tex_bg2);
+
+    // render world
+    renderer_use_world(&app->renderer, &g_camera, w, h);
+    tilemap_render(&g_tilemap, &app->shader_default);
+    shader_bind(&app->shader_sprite);
+    player_render(&g_player, &app->shader_sprite);
+
+    // debug overlay
+    if (app->debug_overlay) {
+        renderer_use_screen(&app->renderer, w, h);
+        render_debug_panel(app);
     }
 
-    const float alpha = (float)(app->accumulator / FIXED_TIMESTEP);
-    player_update(&g_player, dt, &app->input, alpha, &g_tilemap);
-    camera_update(&g_camera, dt, g_player.render_xx);
-
-    // -----
-    // clear
-    // -----
-    renderer_clear(0.0f, 0.0f, 0.0f, 1.0f);
-
-    // -----------------
-    // render background
-    // -----------------
-    shader_bind(&g_shader_default);
-    parallax_render(&g_shader_default, &g_camera, 0.0f, &g_spr_bg, &g_tex_sky);
-    parallax_render(&g_shader_default, &g_camera, 0.01f, &g_spr_bg, &g_tex_bg1);
-    parallax_render(&g_shader_default, &g_camera, 0.2f, &g_spr_bg, &g_tex_bg2);
-
-    // --------------
-    // render tilemap
-    // --------------
-    mat4 view;
-    camera_view(&g_camera, view);
-    shader_set_mat4(&g_shader_default, "view", (float*)view);
-    tilemap_render(&g_tilemap, &g_shader_default);
-
-    // -------------
-    // render player
-    // -------------
-    shader_bind(&g_shader_sprite);
-    shader_set_mat4(&g_shader_sprite, "view", (float*)view);
-    player_render(&g_player, &g_shader_sprite);
-
-    // ---------
-    // debugging
-    // ---------
-    if (app->debug_overlay)
-        render_debug_panel();
+    renderer_end(&app->renderer);
 
     window_swap(&app->window);
     return SDL_APP_CONTINUE;
@@ -281,13 +242,11 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
 
     tilemap_destroy(&g_tilemap);
     player_destroy(&g_player);
-    shader_destroy(&g_shader_default);
-    shader_destroy(&g_shader_sprite);
 
-    font_destroy(&g_font);
-    shader_destroy(&g_shader_text);
+    renderer_destroy(&app->renderer);
+    app_unload_assets(app);
+    app_destroy(app);
 
-    window_destroy(&app->window);
     SDL_free(app);
     SDL_Quit();
 }

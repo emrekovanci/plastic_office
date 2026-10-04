@@ -2,7 +2,10 @@
 
 layout(location = 0) in vec4 vertex;
 
-uniform mat4 projection;
+layout(std140) uniform Matrices {
+    mat4 view;
+    mat4 projection;
+};
 
 out vec2 TexCoord;
 

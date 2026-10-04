@@ -5,9 +5,7 @@
 #include "shader.h"
 
 typedef struct Sprite {
-    unsigned int vao;
-    unsigned int vbo;
-    unsigned int ebo;
+    unsigned int vao, vbo, ebo;
 } Sprite;
 
 void sprite_create(Sprite *sprite);

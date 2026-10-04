@@ -1,23 +1,16 @@
 #include "parallax.h"
-#include "constants.h"
-#include <cglm/cglm.h>
+#include <math.h>
 
-void parallax_render(Shader *shader, Camera *camera, float factor, Sprite *sprite, Texture *texture)
+void parallax_render(Shader *shader, int vp_w, int vp_h, float scroll,
+                     Sprite *sprite, Texture *texture)
 {
-    // build a standalone view matrix for this layer (independent of the camera's actual view matrix)
-    mat4 view;
-    glm_mat4_identity(view);
+    const float h = (float)vp_h;
+    const float w = (float)texture->width * (h / (float)texture->height);
 
-    vec3 translation = { -camera->x * factor, 0.0f, 0.0f };
-    glm_translate(view, translation);
-    shader_set_mat4(shader, "view", (float*)view);
+    float offset = floorf(fmodf(scroll, w));
+    if (offset < 0.0f)
+        offset += w;
 
-    sprite_render(sprite,
-                  texture,
-                  shader,
-                  0.0f, 0.0f,
-                  (float)texture->width * TILE_SCALE,
-                  (float)texture->height * TILE_SCALE,
-                  0.0f,
-                  0.0f, 0.0f);
+    for (float x = -offset; x < (float)vp_w; x += w)
+        sprite_render(sprite, texture, shader, x, 0.0f, w, h, 0.0f, 0.0f, 0.0f);
 }

@@ -9,6 +9,11 @@
 #define WINDOW_GL_MAJOR_VERSION  4
 #define WINDOW_GL_MINOR_VERSION  3
 
+// --------
+// renderer
+// --------
+#define UBO_BINDING_MATRICES     0
+
 // --
 // ui
 // --
