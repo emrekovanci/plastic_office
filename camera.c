@@ -2,9 +2,6 @@
 #include "constants.h"
 #include "utils.h"
 
-#define CAMERA_MIN_TILES 8.0f              // closest
-#define CAMERA_MAX_TILES ((float)MAP_ROWS) // far away (whole map)
-
 static float camera_world_h(const Camera *cam)
 {
     return cam->vt * TILE_RENDER_SIZE;

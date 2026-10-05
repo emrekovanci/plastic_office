@@ -40,6 +40,12 @@
 #define COLLISION_LAYER_INDEX    (MAP_LAYERS - 1)
 
 // ------
+// camera
+// ------
+#define CAMERA_MIN_TILES         8.0f              // closest
+#define CAMERA_MAX_TILES         ((float)MAP_ROWS) // far away (whole map)
+
+// ------
 // others
 // ------
 typedef enum {
