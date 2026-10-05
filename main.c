@@ -15,6 +15,7 @@
 #include "renderer.h"
 #include "parallax.h"
 #include "timer.h"
+#include "render_target.h"
 
 // general
 Camera g_camera;
@@ -36,6 +37,7 @@ typedef struct AppContext {
     Shader shader_text;
     Input input;
     Renderer renderer;
+    RenderTarget rt;
     bool debug_overlay;
     Window window;
 } AppContext;
@@ -57,7 +59,10 @@ static void debug_line(AppContext *app, float y, const char* fmt, ...)
 
 static void render_debug_panel(AppContext *app)
 {
-    debug_line(app, 220.0f, "Visible Tiles: %.4f", g_camera.vt);
+    int vsync;
+    window_get_vsync(&app->window, &vsync);
+    
+    debug_line(app, 220.9f, "VSync: %d", vsync);
     debug_line(app, 180.0f, "DX: %.2f", g_player.dx);
     debug_line(app, 140.0f, "DY: %.2f", g_player.dy);
     debug_line(app, 100.0f, "Anim Frame: %d", g_player.anim_frame);
@@ -139,6 +144,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     sprite_create(&g_spr_bg);
 
     renderer_init(&app->renderer);
+    if (!rt_create(&app->rt, VIRT_W, VIRT_H)) {
+        SDL_Log("Failed to create render target!");
+        return SDL_APP_FAILURE;
+    }
+
     camera_init(&g_camera);
     tilemap_init(&g_tilemap);
     player_init(&g_player);
@@ -174,9 +184,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         }
     }
 
-    if (event->type == SDL_EVENT_MOUSE_WHEEL)
-        camera_zoom_step(&g_camera, event->wheel.y);
-
     return SDL_APP_CONTINUE;
 }
 
@@ -197,35 +204,38 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     player_update(&g_player, dt, &app->input, alpha, &g_tilemap);
     camera_update(&g_camera, dt, g_player.render_xx, 0.0f);
 
-    // ---------
-    // rendering
-    // ---------
     int w, h;
     window_get_pixel_size(&app->window, &w, &h);
     app->ui_scale = (float)h / UI_REFERENCE_HEIGHT;
 
-    // render background
-    renderer_begin(&app->renderer, w, h);
-    renderer_use_screen(&app->renderer, w, h);
+    rt_begin(&app->rt);
+    renderer_begin(&app->renderer, VIRT_W, VIRT_H);
+    renderer_use_screen(&app->renderer, VIRT_W, VIRT_H);
     shader_bind(&app->shader_default);
-    parallax_render(&app->shader_default, w, h, 0.0f, &g_spr_bg, &g_tex_sky);
-    parallax_render(&app->shader_default, w, h, g_camera.x * 0.01f, &g_spr_bg, &g_tex_bg1);
-    parallax_render(&app->shader_default, w, h, g_camera.x * 0.2f, &g_spr_bg, &g_tex_bg2);
 
-    // render world
-    renderer_use_world(&app->renderer, &g_camera, w, h);
+    // parallax_render(&app->shader_default, VIRT_W, VIRT_H, 0.0f,                        &g_spr_bg, &g_tex_sky);
+    // parallax_render(&app->shader_default, VIRT_W, VIRT_H, floorf(g_camera.x * 0.05f),  &g_spr_bg, &g_tex_bg1);
+    // parallax_render(&app->shader_default, VIRT_W, VIRT_H, floorf(g_camera.x * 0.3f),   &g_spr_bg, &g_tex_bg2);
+
+    renderer_use_world(&app->renderer, &g_camera, VIRT_W, VIRT_H);
     tilemap_render(&g_tilemap, &app->shader_default);
-    shader_bind(&app->shader_sprite);
-    player_render(&g_player, &app->shader_sprite);
 
-    // debug overlay
+    const RTLayout L = rt_layout(&app->rt, w, h, g_camera.sub_x, g_camera.sub_y);
+    rt_present(&app->rt, w, h, &L);
+    
+    const float sx = roundf(L.x + (g_player.render_xx - g_camera.x + VIRT_W * 0.5f) * L.scale);
+    const float sy = roundf(L.y + (g_player.render_yy - g_camera.y + VIRT_H * 0.5f) * L.scale);
+    
+    renderer_use_screen(&app->renderer, w, h);
+    shader_bind(&app->shader_sprite);
+    player_render(&g_player, &app->shader_sprite, sx, sy, (float)L.scale);
+
     if (app->debug_overlay) {
         renderer_use_screen(&app->renderer, w, h);
         render_debug_panel(app);
     }
-
+    
     renderer_end(&app->renderer);
-
     window_swap(&app->window);
     return SDL_APP_CONTINUE;
 }
@@ -242,6 +252,7 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
     tilemap_destroy(&g_tilemap);
     player_destroy(&g_player);
 
+    rt_destroy(&app->rt);
     renderer_destroy(&app->renderer);
     app_unload_assets(app);
     app_destroy(app);

@@ -5,7 +5,7 @@
 
 typedef struct Camera {
     float x, y;
-    float vt, vt_target; // visible tiles
+    float sub_x, sub_y;
 } Camera;
 
 void camera_init(Camera *cam);

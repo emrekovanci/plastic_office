@@ -1,11 +1,14 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#define VIRT_W                   320
+#define VIRT_H                   180
+
 // ------
 // window
 // ------
-#define WINDOW_WIDTH             1280
-#define WINDOW_HEIGHT            720
+#define WINDOW_WIDTH             1920
+#define WINDOW_HEIGHT            1080
 #define WINDOW_GL_MAJOR_VERSION  4
 #define WINDOW_GL_MINOR_VERSION  3
 
@@ -22,8 +25,8 @@
 // -----
 // tiles
 // -----
-#define TILE_SCALE               8
-#define TILE_SIZE                32
+#define TILE_SCALE               1
+#define TILE_SIZE                8
 #define TILE_RENDER_SIZE         (TILE_SIZE * TILE_SCALE)
 
 // -------
@@ -34,9 +37,9 @@
 // -------
 // tilemap
 // -------
-#define MAP_LAYERS               4
-#define MAP_COLS                 32
-#define MAP_ROWS                 16
+#define MAP_LAYERS               3
+#define MAP_COLS                 40
+#define MAP_ROWS                 23
 #define COLLISION_LAYER_INDEX    (MAP_LAYERS - 1)
 
 // ------

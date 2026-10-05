@@ -185,3 +185,11 @@ void window_get_logical_size(Window *win, int *w, int *h)
 {
     SDL_GetWindowSize(win->handle, w, h);
 }
+
+void window_get_vsync(Window *win, int *vsync)
+{
+    //  0 -> VSync off
+    //  1 -> VSync on
+    // -1 -> Adaptive VSync
+    SDL_GL_GetSwapInterval(vsync);
+}

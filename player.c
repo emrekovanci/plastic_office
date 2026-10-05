@@ -3,22 +3,16 @@
 #include "constants.h"
 #include "utils.h"
 
-static void player_render_hitbox(Player *player, Shader *shader)
+static void player_render_hitbox(Player *player, Shader *shader, float sx, float sy, float scale)
 {
-    const float width = PLAYER_HITBOX_HALF_WIDTH * 2.0f * TILE_RENDER_SIZE;
-    const float height = PLAYER_HITBOX_HEIGHT * TILE_RENDER_SIZE;
+    const float width  = PLAYER_HITBOX_HALF_WIDTH * 2.0f * TILE_RENDER_SIZE * scale;
+    const float height = PLAYER_HITBOX_HEIGHT * TILE_RENDER_SIZE * scale;
 
     shader_set_vec2(shader, "uv_scale",  1.0f, 1.0f);
     shader_set_vec2(shader, "uv_offset", 0.0f, 0.0f);
 
-    sprite_render(
-        &player->sprite,
-        &player->texture_hitbox,
-        shader,
-        player->render_xx, player->render_yy,
-        width, height,
-        0.0f,
-        0.5f, 0.0f);
+    sprite_render(&player->sprite, &player->texture_hitbox, shader,
+                  sx, sy, width, height, 0.0f, 0.5f, 0.0f);
 }
 
 static bool collides_x(Tilemap *tilemap, int tile_x, int y_min, int y_max)
@@ -39,24 +33,11 @@ static bool collides_y(Tilemap *tilemap, int tile_y, int x_min, int x_max)
     return false;
 }
 
-static Texture *anim_texture(Player *player)
+static AnimID current_anim(Player *player)
 {
-    if (!player->grounded || player->is_landing) return &player->texture_jump;
-    if (player->is_moving && player->is_running) return &player->texture_run;
-    if (player->is_moving) return &player->texture_walk;
-    return &player->texture_idle;
-}
-
-static int anim_rows(Player *player)
-{
-    const Texture *tex = anim_texture(player);
-    return tex->height / PLAYER_TILE_SIZE;
-}
-
-static int anim_cols(Player *player)
-{
-    const Texture *tex = anim_texture(player);
-    return tex->width / PLAYER_TILE_SIZE;
+    if (!player->grounded) return ANIM_JUMP;
+    if (player->is_moving) return ANIM_WALK;
+    return ANIM_IDLE;
 }
 
 static bool is_grounded(Player *player, Tilemap *tilemap)
@@ -126,12 +107,10 @@ static void player_on_pre_step_y(Player *player, Tilemap *tilemap)
 void player_init(Player *player)
 {
     sprite_create(&player->sprite);
-    texture_load(&player->texture_idle, "assets/Gangsters_1/Idle.png");
-    texture_load(&player->texture_walk, "assets/Gangsters_1/Walk.png");
-    texture_load(&player->texture_run, "assets/Gangsters_1/Run.png");
-    texture_load(&player->texture_jump, "assets/Gangsters_1/Jump.png");
+    texture_load(&player->texture_sheet, "assets/CharacterSheet.png");
     texture_create_solid(&player->texture_hitbox, (Color){ 255, 0, 0, 100 });
 
+    player->anim_id = ANIM_IDLE;
     player->anim_frame = 0;
     player->anim_timer = 0.0f;
     player->cx = 2;
@@ -149,23 +128,17 @@ void player_init(Player *player)
     player->last_axis = 0.0f;
     player->axis_hold_timer = 0.0f;
     player->jump_buffer_timer = 0.0f;
-    player->landing_timer = 0.0f;
     player->dir = DIRECTION_E;
     player->is_moving = false;
     player->is_running = false;
     player->grounded = false;
     player->prev_grounded = false;
-    player->is_landing = false;
     player->render_hitbox = false;
 }
 
 void player_destroy(Player *player)
 {
-    texture_destroy(&player->texture_hitbox);
-    texture_destroy(&player->texture_jump);
-    texture_destroy(&player->texture_run);
-    texture_destroy(&player->texture_walk);
-    texture_destroy(&player->texture_idle);
+    texture_destroy(&player->texture_sheet);
     sprite_destroy(&player->sprite);
 }
 
@@ -265,13 +238,6 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
     player->yy = (player->cy + player->yr) * TILE_RENDER_SIZE;
 
     player->grounded = is_grounded(player, tilemap);
-
-    if (player->grounded && !player->prev_grounded) {
-        player->is_landing = true;
-        player->landing_timer = 0.0f;
-        player->anim_frame = 7;
-        player->anim_timer = 0.0f;
-    }
 }
 
 void player_update(Player *player, float dt, Input *input, float alpha, Tilemap *tilemap)
@@ -279,36 +245,21 @@ void player_update(Player *player, float dt, Input *input, float alpha, Tilemap 
     if (input_key_pressed(input, SDL_SCANCODE_SPACE) || input_key_pressed(input, SDL_SCANCODE_UP))
         player->jump_buffer_timer = PLAYER_JUMP_BUFFER;
 
-    if (player->is_landing) {
-        player->landing_timer += dt;
-        const int landing_frame = 7 + (int)(player->landing_timer / (PLAYER_FRAME_TIME * 0.5f));
+    const AnimID id = current_anim(player);
+    if (id != player->anim_id) {
+        player->anim_id = id;
+        player->anim_frame = 0;
+        player->anim_timer = 0.0f;
+    }
+    const Animation *anim = &PLAYER_ANIMS[player->anim_id];
 
-        if (landing_frame > 9) {
-            player->is_landing = false;
-            player->anim_frame = 0;
-            player->anim_timer = 0.0f;
-        } else {
-            player->anim_frame = landing_frame;
-        }
-    } else if (!player->grounded) {
-        // ascent
-        if (player->dy > 0.0f) {
-            float t = 1.0f - (player->dy / PLAYER_JUMP_FORCE);
-            t = SDL_clamp(t, 0.0f, 1.0f);
-            t = sqrtf(t);
-            const int frame = (int)(t * 5.0f);
-            player->anim_frame = (frame > 4) ? 4 : frame;
-        } else {
-            // descent
-            player->anim_timer += dt;
-            const int loop_frame = (int)(player->anim_timer / PLAYER_FRAME_TIME) % 2;
-            player->anim_frame = 4 + loop_frame;
-        }
+    if (!player->grounded) {
+        player->anim_frame = (player->dy > 0.0f) ? 0 : 1;
     } else {
         player->anim_timer += dt;
-        if (player->anim_timer >= PLAYER_FRAME_TIME) {
-            player->anim_timer -= PLAYER_FRAME_TIME;
-            player->anim_frame = (player->anim_frame + 1) % anim_cols(player);
+        if (player->anim_timer >= anim->frame_time) {
+            player->anim_timer -= anim->frame_time;
+            player->anim_frame = (player->anim_frame + 1) % anim->frames;
         }
     }
 
@@ -316,22 +267,16 @@ void player_update(Player *player, float dt, Input *input, float alpha, Tilemap 
     player->render_yy = lerpf(player->prev_yy, player->yy, alpha);
 }
 
-void player_render(Player *player, Shader *shader)
+void player_render(Player *player, Shader *shader, float sx, float sy, float scale)
 {
-    const int cols = anim_cols(player);
-    const int rows = anim_rows(player);
-    const int frame = player->anim_frame;
-    const int dir_row = 0; // animations are single-row sheets
+    const Animation *anim = &PLAYER_ANIMS[player->anim_id];
 
-    // size of one frame in uv space
-    float scale_x = 1.0f / cols;
-    float scale_y = 1.0f / rows;
+    float scale_x = 1.0f / PLAYER_SHEET_COLS;
+    float scale_y = 1.0f / PLAYER_SHEET_ROWS;
 
-    // uv origin of current frame
-    float offset_x = frame * scale_x;
-    float offset_y = dir_row * scale_y;
+    float offset_x = (anim->col + player->anim_frame) * scale_x;
+    float offset_y = (PLAYER_SHEET_ROWS - 1 - anim->row) * scale_y;
 
-    // read uv from right to left
     if (player->dir == DIRECTION_W) {
         offset_x += scale_x;
         scale_x = -scale_x;
@@ -340,15 +285,13 @@ void player_render(Player *player, Shader *shader)
     shader_set_vec2(shader, "uv_scale", scale_x, scale_y);
     shader_set_vec2(shader, "uv_offset", offset_x, offset_y);
 
-    sprite_render(
-        &player->sprite,
-        anim_texture(player),
-        shader,
-        player->render_xx, player->render_yy,
-        PLAYER_RENDER_SIZE, PLAYER_RENDER_SIZE,
-        0.0f,
-        0.5f, 0.0f);
+    sprite_render(&player->sprite, &player->texture_sheet, shader,
+                  sx, sy,
+                  PLAYER_RENDER_W * scale, PLAYER_RENDER_H * scale,
+                  0.0f,
+                  0.5f, 0.0f);
 
     if (player->render_hitbox)
-        player_render_hitbox(player, shader);
+        player_render_hitbox(player, shader, sx, sy, scale);
 }
+

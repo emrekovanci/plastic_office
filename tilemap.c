@@ -13,10 +13,9 @@ typedef struct TilemapLayerDef {
 } TilemapLayerDef;
 
 static const TilemapLayerDef LAYER_DEFS[MAP_LAYERS] = {
-    { "assets/side_Layer_1_Ground.csv",    "assets/Ground.png" },
-    { "assets/side_Layer_2_Buildings.csv", "assets/Buildings.png" },
-    { "assets/side_Layer_3_Decos.csv",     "assets/Decoration.png" },
-    { "assets/side_Layer_4_Collision.csv", "assets/Sprite_Collision.png" },
+    { "assets/level_01_01_Ground.csv",    "assets/GrassTiles.png" },
+    { "assets/level_01_02_Deco.csv",      "assets/Decor.png" },
+    { "assets/level_01_03_Collision.csv", "assets/DirtBackgroundTiles.png" },
 };
 
 static void tile_uv(int rows, int cols, int tile_id, float *u0, float *v0, float *u1, float *v1)

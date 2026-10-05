@@ -2,47 +2,33 @@
 #include "constants.h"
 #include "utils.h"
 
-static float camera_world_h(const Camera *cam)
-{
-    return cam->vt * TILE_RENDER_SIZE;
-}
-
 void camera_init(Camera *cam)
-{
-    *cam = (Camera) {
-        .x = 0.0f,
-        .y = 0.0f,
-        .vt = CAMERA_MAX_TILES,
-        .vt_target = CAMERA_MAX_TILES
-    };
+{        
+    *cam = (Camera) { 0 };
 }
 
 void camera_update(Camera *cam, float dt, float target_x, float target_y)
 {
-    cam->vt = lerpf(cam->vt, cam->vt_target, 1.0f - expf(-10.0f * dt));
+    const float px = (float)TILE_SCALE;
+    const float ty = target_y + VIRT_H * 0.5f;
 
-    if (fabsf(cam->vt - cam->vt_target) < 0.001f)
-        cam->vt = cam->vt_target;
+    cam->x = roundf(target_x / px) * px;
+    cam->y = roundf(ty / px) * px;
 
-    cam->x = target_x;
-    cam->y = target_y + camera_world_h(cam) * 0.5f;
+    cam->sub_x = (target_x - cam->x) / px;
+    cam->sub_y = (ty - cam->y) / px;
 }
 
 void camera_view(const Camera *cam, mat4 out)
 {
     glm_mat4_identity(out);
-    glm_translate(out, (vec3){ -cam->x, -cam->y, 0.0f });
+
+    glm_translate(out, (vec3) { -cam->x, -cam->y, 0.0f });
 }
 
 void camera_proj(const Camera *cam, int width, int height, mat4 out)
 {
-    const float hh = camera_world_h(cam) * 0.5f;
-    const float hw = hh * ((float)width / (float)height);
+    const float hw = VIRT_W * 0.5f;
+    const float hh = VIRT_H * 0.5f;
     glm_ortho(-hw, hw, -hh, hh, -1, 1, out);
-}
-
-void camera_zoom_step(Camera *cam, float dir)
-{
-    const float step = (dir > 0) ? -1.0f : 1.0f;
-    cam->vt_target = clampf(cam->vt_target + step, CAMERA_MIN_TILES, CAMERA_MAX_TILES);
 }
