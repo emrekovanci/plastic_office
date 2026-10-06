@@ -5,7 +5,6 @@
 
 typedef struct Camera {
     float x, y;
-    float sub_x, sub_y;
 } Camera;
 
 void camera_init(Camera *cam);

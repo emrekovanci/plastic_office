@@ -3,16 +3,22 @@
 #include "constants.h"
 #include "utils.h"
 
-static void player_render_hitbox(Player *player, Shader *shader, float sx, float sy, float scale)
+static void player_render_hitbox(Player *player, Shader *shader)
 {
-    const float width  = PLAYER_HITBOX_HALF_WIDTH * 2.0f * TILE_SIZE * scale;
-    const float height = PLAYER_HITBOX_HEIGHT * TILE_SIZE * scale;
+    const float width  = PLAYER_HITBOX_HALF_WIDTH * 2.0f * TILE_SIZE;
+    const float height = PLAYER_HITBOX_HEIGHT * TILE_SIZE;
 
     shader_set_vec2(shader, "uv_scale",  1.0f, 1.0f);
     shader_set_vec2(shader, "uv_offset", 0.0f, 0.0f);
 
-    sprite_render(&player->sprite, &player->texture_hitbox, shader,
-                  sx, sy, width, height, 0.0f, 0.5f, 0.0f);
+    sprite_render(
+        &player->sprite,
+        &player->texture_hitbox,
+        shader,
+        player->render_xx, player->render_yy,
+        width, height,
+        0.0f,
+        0.5f, 0.0f);
 }
 
 static bool collides_x(Tilemap *tilemap, int tile_x, int y_min, int y_max)
@@ -125,14 +131,11 @@ void player_init(Player *player)
     player->render_yy = player->yy;
     player->dx = 0.0f;
     player->dy = 0.0f;
-    player->last_axis = 0.0f;
-    player->axis_hold_timer = 0.0f;
-    player->jump_buffer_timer = 0.0f;
+    player->jump_requested = false;
     player->dir = DIRECTION_E;
     player->is_moving = false;
     player->is_running = false;
     player->grounded = false;
-    player->prev_grounded = false;
     player->render_hitbox = false;
 }
 
@@ -148,25 +151,13 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
     // save prev physic state
     player->prev_xx = player->xx;
     player->prev_yy = player->yy;
-    player->prev_grounded = player->grounded;
 
     // read sustained inputs
     const bool left_down = input_key_down(input, SDL_SCANCODE_A) || input_key_down(input, SDL_SCANCODE_LEFT);
     const bool right_down = input_key_down(input, SDL_SCANCODE_D) || input_key_down(input, SDL_SCANCODE_RIGHT);
     const bool shift_down = input_key_down(input, SDL_SCANCODE_LSHIFT) || input_key_down(input, SDL_SCANCODE_RSHIFT);
 
-    const float raw_axis = right_down * 2.0f - left_down;
-    float axis = signf(raw_axis);
-
-    if (axis != 0.0f) {
-        player->last_axis = axis;
-        player->axis_hold_timer = 0.05f;
-    } else {
-        player->axis_hold_timer -= dt;
-        if (player->axis_hold_timer > 0.0f)
-            axis = player->last_axis;
-    }
-
+    const float axis = right_down * 2.0f - left_down;
     const bool moving = (axis != 0.0f);
     const bool running = moving && shift_down;
 
@@ -192,11 +183,9 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
     player->is_moving = moving;
     player->is_running = running;
 
-    player->jump_buffer_timer -= dt;
-    if (player->jump_buffer_timer > 0.0f && player->grounded) {
+    if (player->jump_requested && player->grounded)
         player->dy = PLAYER_JUMP_FORCE;
-        player->jump_buffer_timer = 0.0f;
-    }
+    player->jump_requested = false;
 
     const float friction = (fabsf(target_dx) < PLAYER_EPSILON) ? 0.80f : 0.4f;
     player->dx += (target_dx - player->dx) * friction;
@@ -244,7 +233,7 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
 void player_update(Player *player, float dt, Input *input, float alpha, Tilemap *tilemap)
 {
     if (input_key_pressed(input, SDL_SCANCODE_SPACE) || input_key_pressed(input, SDL_SCANCODE_UP))
-        player->jump_buffer_timer = PLAYER_JUMP_BUFFER;
+        player->jump_requested = true;
 
     const AnimID id = current_anim(player);
     if (id != player->anim_id) {
@@ -264,11 +253,11 @@ void player_update(Player *player, float dt, Input *input, float alpha, Tilemap 
         }
     }
 
-    player->render_xx = lerpf(player->prev_xx, player->xx, alpha);
-    player->render_yy = lerpf(player->prev_yy, player->yy, alpha);
+    player->render_xx = roundf(lerpf(player->prev_xx, player->xx, alpha));
+    player->render_yy = roundf(lerpf(player->prev_yy, player->yy, alpha));
 }
 
-void player_render(Player *player, Shader *shader, float sx, float sy, float scale)
+void player_render(Player *player, Shader *shader)
 {
     const Animation *anim = &PLAYER_ANIMS[player->anim_id];
 
@@ -285,14 +274,17 @@ void player_render(Player *player, Shader *shader, float sx, float sy, float sca
 
     shader_set_vec2(shader, "uv_scale", scale_x, scale_y);
     shader_set_vec2(shader, "uv_offset", offset_x, offset_y);
-
-    sprite_render(&player->sprite, &player->texture_sheet, shader,
-                  sx, sy,
-                  PLAYER_RENDER_W * scale, PLAYER_RENDER_H * scale,
-                  0.0f,
-                  0.5f, 0.0f);
+    
+    sprite_render(
+        &player->sprite,
+        &player->texture_sheet,
+        shader,
+        player->render_xx, player->render_yy,
+        PLAYER_RENDER_W, PLAYER_RENDER_H,
+        0.0f,
+        0.5f, 0.0f);
 
     if (player->render_hitbox)
-        player_render_hitbox(player, shader, sx, sy, scale);
+        player_render_hitbox(player, shader);
 }
 

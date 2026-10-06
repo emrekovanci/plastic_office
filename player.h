@@ -10,20 +10,16 @@
 
 #define PLAYER_SHEET_COLS         4
 #define PLAYER_SHEET_ROWS         6
-#define PLAYER_RENDER_W           (16)
-#define PLAYER_RENDER_H           (32)
+#define PLAYER_RENDER_W           16
+#define PLAYER_RENDER_H           32
 
-// both of them in tiles
-#define PLAYER_HITBOX_HALF_WIDTH  0.4f
+#define PLAYER_HITBOX_HALF_WIDTH  0.5f
 #define PLAYER_HITBOX_HEIGHT      2.0f
 
-// movement
-// 0.08 x 30 => 2.4 tile/secs * TILE_RENDER_SIZE(256) => 614 px/secs
-#define PLAYER_MOVE_SPEED         0.25f
-#define PLAYER_RUN_SPEED          0.45f
+#define PLAYER_MOVE_SPEED         0.5f
+#define PLAYER_RUN_SPEED          0.5f
 #define PLAYER_GRAVITY           -0.08f
 #define PLAYER_JUMP_FORCE         1.1f
-#define PLAYER_JUMP_BUFFER        0.18f
 #define PLAYER_EPSILON            0.001f
 
 typedef enum AnimID {
@@ -75,15 +71,12 @@ typedef struct Player {
     float dx;
     float dy;
 
-    float last_axis;
-    float axis_hold_timer;
-    float jump_buffer_timer;
+    bool jump_requested;
 
     Direction dir;
     bool is_moving;
     bool is_running;
     bool grounded;
-    bool prev_grounded;
 
     // debugging
     bool render_hitbox;
@@ -94,6 +87,6 @@ void player_destroy(Player *player);
 
 void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilemap);
 void player_update(Player *player, float dt, Input *input, float alpha, Tilemap *tilemap);
-void player_render(Player *player, Shader *shader, float sx, float sy, float scale);
+void player_render(Player *player, Shader *shader);
 
 #endif

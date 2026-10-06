@@ -63,12 +63,12 @@ static void render_debug_panel(AppContext *app)
     int vsync;
     window_get_vsync(&app->window, &vsync);
 
-    debug_line(app, 220.9f, "VSync: %d", vsync);
-    debug_line(app, 180.0f, "DX: %.2f", g_player.dx);
-    debug_line(app, 140.0f, "DY: %.2f", g_player.dy);
-    debug_line(app, 100.0f, "Anim Frame: %d", g_player.anim_frame);
-    debug_line(app, 60.0f, "Tile X: %.2f", g_player.cx + g_player.xr);
-    debug_line(app, 20.0f, "Tile Y: %.2f", g_player.cy + g_player.yr);
+    debug_line(app, 220.0f, "VSync: %d", vsync);
+    debug_line(app, 180.0f, "Anim Frame: %d", g_player.anim_frame);
+    debug_line(app, 140.0f, "Grounded: %d", g_player.grounded);
+    debug_line(app, 100.0f, "DX: %.2f, DY: %.2f", g_player.dx, g_player.dy);
+    debug_line(app, 60.0f, "CX: %d, XR: %.2f", g_player.cx, g_player.xr);
+    debug_line(app, 20.0f, "CY: %d, YR: %.2f", g_player.cy, g_player.yr);
 }
 
 SDL_AppResult app_create(AppContext *app)
@@ -210,27 +210,22 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     window_get_pixel_size(&app->window, &w, &h);
     app->ui_scale = (float)h / UI_REFERENCE_HEIGHT;
 
-    rt_begin(&app->rt);
-    renderer_use_screen(&app->renderer, VIRT_W, VIRT_H);
-    shader_bind(&app->shader_default);
-
     // parallax_render(&app->shader_default, VIRT_W, VIRT_H, 0.0f,               &g_spr_bg, &g_tex_bg1);
     // parallax_render(&app->shader_default, VIRT_W, VIRT_H, g_camera.x * 0.05f, &g_spr_bg, &g_tex_bg2);
     // parallax_render(&app->shader_default, VIRT_W, VIRT_H, g_camera.x * 0.3f,  &g_spr_bg, &g_tex_bg3);
     // parallax_render(&app->shader_default, VIRT_W, VIRT_H, g_camera.x * 0.3f,  &g_spr_bg, &g_tex_bg4);
+    
+    rt_begin(&app->rt);
 
     renderer_use_world(&app->renderer, &g_camera, app->rt.w, app->rt.h);
+    shader_bind(&app->shader_default);
     tilemap_render(&g_tilemap, &app->shader_default);
 
-    const RTLayout L = rt_layout(&app->rt, w, h, g_camera.sub_x, g_camera.sub_y);
-    rt_present(&app->rt, w, h, &L);
-
-    const float sx = roundf(L.x + (g_player.render_xx - g_camera.x + app->rt.w * 0.5f) * L.scale);
-    const float sy = roundf(L.y + (g_player.render_yy - g_camera.y + app->rt.h * 0.5f) * L.scale);
-
-    renderer_use_screen(&app->renderer, w, h);
     shader_bind(&app->shader_sprite);
-    player_render(&g_player, &app->shader_sprite, sx, sy, (float)L.scale);
+    player_render(&g_player, &app->shader_sprite);
+
+    const RTLayout L = rt_layout(&app->rt, w, h);
+    rt_present(&app->rt, w, h, &L);
 
     if (app->debug_overlay) {
         renderer_use_screen(&app->renderer, w, h);
