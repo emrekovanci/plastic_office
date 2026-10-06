@@ -225,8 +225,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     const RTLayout L = rt_layout(&app->rt, w, h, g_camera.sub_x, g_camera.sub_y);
     rt_present(&app->rt, w, h, &L);
 
-    const float sx = roundf(L.x + (g_player.render_xx - g_camera.x + app->rt.w * 0.5f) * L.scale);
-    const float sy = roundf(L.y + (g_player.render_yy - g_camera.y + app->rt.h * 0.5f) * L.scale);
+    const float sx = roundf(L.vr.x + (g_player.render_xx - g_camera.x + app->rt.w * 0.5f) * L.scale);
+    const float sy = roundf(L.vr.y + (g_player.render_yy - g_camera.y + app->rt.h * 0.5f) * L.scale);
 
     renderer_use_screen(&app->renderer, w, h);
     shader_bind(&app->shader_sprite);

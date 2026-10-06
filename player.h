@@ -10,8 +10,8 @@
 
 #define PLAYER_SHEET_COLS         4
 #define PLAYER_SHEET_ROWS         6
-#define PLAYER_RENDER_W           (16)
-#define PLAYER_RENDER_H           (32)
+#define PLAYER_RENDER_W           16
+#define PLAYER_RENDER_H           32
 
 // both of them in tiles
 #define PLAYER_HITBOX_HALF_WIDTH  0.4f

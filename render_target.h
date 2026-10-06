@@ -2,6 +2,7 @@
 #define RENDER_TARGET_H
 
 #include <stdbool.h>
+#include <SDL3/SDL_rect.h>
 
 #define RT_MARGIN 1   // texels, each side
 
@@ -30,8 +31,9 @@ typedef struct RenderTarget {
 } RenderTarget;
 
 typedef struct RTLayout {
-    int scale;
-    int x, y;
+    int scale;    // integer upscale factor
+    SDL_Rect lr;  // logical rect: visible area in window pixels, centered, never shifted
+    SDL_Rect vr;  // virtual rect: whole RT (margin included) in window pixels, shifted for smooth scrolling
 } RTLayout;
 
 bool rt_create(RenderTarget *rt, int w, int h);
