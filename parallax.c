@@ -7,7 +7,7 @@ void parallax_render(Shader *shader, int vp_w, int vp_h, float scroll,
     const float h = (float)vp_h;
     const float w = (float)texture->width * (h / (float)texture->height);
 
-    float offset = floorf(fmodf(scroll, w));
+    float offset = fmodf(scroll, w);
     if (offset < 0.0f)
         offset += w;
 

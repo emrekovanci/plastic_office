@@ -9,8 +9,5 @@ uniform sampler2D BaseTex;
 
 void main()
 {
-    vec4 c = texture(BaseTex, TexCoord);
-    if (c.a < 0.99)
-        discard;
-    FragColor = vec4(ourColor * c.rgb, 1.0);
+    FragColor = vec4(ourColor, 1.0) * texture(BaseTex, TexCoord);
 }

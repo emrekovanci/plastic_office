@@ -23,9 +23,10 @@ Tilemap g_tilemap;
 Player g_player;
 
 // backgrounds
-Texture g_tex_sky;
 Texture g_tex_bg1;
 Texture g_tex_bg2;
+Texture g_tex_bg3;
+Texture g_tex_bg4;
 Sprite g_spr_bg;
 
 typedef struct AppContext {
@@ -61,7 +62,7 @@ static void render_debug_panel(AppContext *app)
 {
     int vsync;
     window_get_vsync(&app->window, &vsync);
-    
+
     debug_line(app, 220.9f, "VSync: %d", vsync);
     debug_line(app, 180.0f, "DX: %.2f", g_player.dx);
     debug_line(app, 140.0f, "DY: %.2f", g_player.dy);
@@ -138,13 +139,14 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
 
     app_load_assets(app);
-    texture_load(&g_tex_sky, "assets/Sky.png");
-    texture_load(&g_tex_bg1, "assets/Background_Layer1.png");
-    texture_load(&g_tex_bg2, "assets/Background_Layer2.png");
+    texture_load(&g_tex_bg1, "assets/BG/bg1.png");
+    texture_load(&g_tex_bg2, "assets/BG/bg2.png");
+    texture_load(&g_tex_bg3, "assets/BG/bg3.png");
+    texture_load(&g_tex_bg4, "assets/BG/bg4.png");
     sprite_create(&g_spr_bg);
 
     renderer_init(&app->renderer);
-    if (!rt_create(&app->rt, VIRT_W, VIRT_H)) {
+    if (!rt_create(&app->rt, VIRT_W + 2 * RT_MARGIN, VIRT_H + 2 * RT_MARGIN)) {
         SDL_Log("Failed to create render target!");
         return SDL_APP_FAILURE;
     }
@@ -154,7 +156,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     player_init(&g_player);
 
     timer_init(&app->timer, FIXED_TIMESTEP);
-    
+
     return SDL_APP_CONTINUE;
 }
 
@@ -209,23 +211,23 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     app->ui_scale = (float)h / UI_REFERENCE_HEIGHT;
 
     rt_begin(&app->rt);
-    renderer_begin(&app->renderer, VIRT_W, VIRT_H);
     renderer_use_screen(&app->renderer, VIRT_W, VIRT_H);
     shader_bind(&app->shader_default);
 
-    // parallax_render(&app->shader_default, VIRT_W, VIRT_H, 0.0f,                        &g_spr_bg, &g_tex_sky);
-    // parallax_render(&app->shader_default, VIRT_W, VIRT_H, floorf(g_camera.x * 0.05f),  &g_spr_bg, &g_tex_bg1);
-    // parallax_render(&app->shader_default, VIRT_W, VIRT_H, floorf(g_camera.x * 0.3f),   &g_spr_bg, &g_tex_bg2);
+    // parallax_render(&app->shader_default, VIRT_W, VIRT_H, 0.0f,               &g_spr_bg, &g_tex_bg1);
+    // parallax_render(&app->shader_default, VIRT_W, VIRT_H, g_camera.x * 0.05f, &g_spr_bg, &g_tex_bg2);
+    // parallax_render(&app->shader_default, VIRT_W, VIRT_H, g_camera.x * 0.3f,  &g_spr_bg, &g_tex_bg3);
+    // parallax_render(&app->shader_default, VIRT_W, VIRT_H, g_camera.x * 0.3f,  &g_spr_bg, &g_tex_bg4);
 
-    renderer_use_world(&app->renderer, &g_camera, VIRT_W, VIRT_H);
+    renderer_use_world(&app->renderer, &g_camera, app->rt.w, app->rt.h);
     tilemap_render(&g_tilemap, &app->shader_default);
 
     const RTLayout L = rt_layout(&app->rt, w, h, g_camera.sub_x, g_camera.sub_y);
     rt_present(&app->rt, w, h, &L);
-    
-    const float sx = roundf(L.x + (g_player.render_xx - g_camera.x + VIRT_W * 0.5f) * L.scale);
-    const float sy = roundf(L.y + (g_player.render_yy - g_camera.y + VIRT_H * 0.5f) * L.scale);
-    
+
+    const float sx = roundf(L.x + (g_player.render_xx - g_camera.x + app->rt.w * 0.5f) * L.scale);
+    const float sy = roundf(L.y + (g_player.render_yy - g_camera.y + app->rt.h * 0.5f) * L.scale);
+
     renderer_use_screen(&app->renderer, w, h);
     shader_bind(&app->shader_sprite);
     player_render(&g_player, &app->shader_sprite, sx, sy, (float)L.scale);
@@ -234,8 +236,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         renderer_use_screen(&app->renderer, w, h);
         render_debug_panel(app);
     }
-    
-    renderer_end(&app->renderer);
+
     window_swap(&app->window);
     return SDL_APP_CONTINUE;
 }
@@ -245,9 +246,10 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
     AppContext *app = appstate;
 
     sprite_destroy(&g_spr_bg);
+    texture_destroy(&g_tex_bg4);
+    texture_destroy(&g_tex_bg3);
     texture_destroy(&g_tex_bg2);
     texture_destroy(&g_tex_bg1);
-    texture_destroy(&g_tex_sky);
 
     tilemap_destroy(&g_tilemap);
     player_destroy(&g_player);

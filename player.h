@@ -17,9 +17,6 @@
 #define PLAYER_HITBOX_HALF_WIDTH  0.4f
 #define PLAYER_HITBOX_HEIGHT      2.0f
 
-// animation
-#define PLAYER_FRAME_TIME         (1.0f / 10.0f)
-
 // movement
 // 0.08 x 30 => 2.4 tile/secs * TILE_RENDER_SIZE(256) => 614 px/secs
 #define PLAYER_MOVE_SPEED         0.25f
@@ -32,7 +29,6 @@
 typedef enum AnimID {
     ANIM_IDLE,
     ANIM_WALK,
-    ANIM_RUN,
     ANIM_JUMP,
     ANIM_COUNT
 } AnimID;
@@ -47,7 +43,6 @@ typedef struct Animation {
 static const Animation PLAYER_ANIMS[ANIM_COUNT] = {
     [ANIM_IDLE] = { .row = 0, .col = 0, .frames = 1, .frame_time = 1.0f / 12.0f },
     [ANIM_WALK] = { .row = 1, .col = 0, .frames = 4, .frame_time = 1.0f / 10.0f },
-    [ANIM_RUN]  = { .row = 1, .col = 0, .frames = 4, .frame_time = 1.0f / 10.0f },
     [ANIM_JUMP] = { .row = 2, .col = 0, .frames = 2, .frame_time = 1.0f / 12.0f },
 };
 

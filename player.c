@@ -5,8 +5,8 @@
 
 static void player_render_hitbox(Player *player, Shader *shader, float sx, float sy, float scale)
 {
-    const float width  = PLAYER_HITBOX_HALF_WIDTH * 2.0f * TILE_RENDER_SIZE * scale;
-    const float height = PLAYER_HITBOX_HEIGHT * TILE_RENDER_SIZE * scale;
+    const float width  = PLAYER_HITBOX_HALF_WIDTH * 2.0f * TILE_SIZE * scale;
+    const float height = PLAYER_HITBOX_HEIGHT * TILE_SIZE * scale;
 
     shader_set_vec2(shader, "uv_scale",  1.0f, 1.0f);
     shader_set_vec2(shader, "uv_offset", 0.0f, 0.0f);
@@ -117,8 +117,8 @@ void player_init(Player *player)
     player->cy = 5;
     player->xr = 0.5f;
     player->yr = 0.0f;
-    player->xx = (player->cx + player->xr) * TILE_RENDER_SIZE;
-    player->yy = (player->cy + player->yr) * TILE_RENDER_SIZE;
+    player->xx = (player->cx + player->xr) * TILE_SIZE;
+    player->yy = (player->cy + player->yr) * TILE_SIZE;
     player->prev_xx = player->xx;
     player->prev_yy = player->yy;
     player->render_xx = player->xx;
@@ -138,6 +138,7 @@ void player_init(Player *player)
 
 void player_destroy(Player *player)
 {
+    texture_destroy(&player->texture_hitbox);
     texture_destroy(&player->texture_sheet);
     sprite_destroy(&player->sprite);
 }
@@ -234,8 +235,8 @@ void player_fixed_update(Player *player, float dt, Input *input, Tilemap *tilema
         }
     }
 
-    player->xx = (player->cx + player->xr) * TILE_RENDER_SIZE;
-    player->yy = (player->cy + player->yr) * TILE_RENDER_SIZE;
+    player->xx = (player->cx + player->xr) * TILE_SIZE;
+    player->yy = (player->cy + player->yr) * TILE_SIZE;
 
     player->grounded = is_grounded(player, tilemap);
 }

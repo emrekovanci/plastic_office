@@ -191,10 +191,7 @@ bool tilemap_init(Tilemap *out)
 
 void tilemap_render(Tilemap *tm, Shader *s)
 {
-    // TODO: no need to calculate every frame, tilemap doesnt move
     mat4 model = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(model, (vec3){ 0.0f, 0.0f, 0.0f });
-    glm_scale(model, (vec3){ (float)TILE_SCALE, (float)TILE_SCALE, 1.0f });
     shader_set_mat4(s, "model", (float*)model);
 
     for (int i = 0; i < MAP_LAYERS; ++i) {
