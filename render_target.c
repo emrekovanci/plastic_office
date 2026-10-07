@@ -8,10 +8,11 @@
 #define COLOR_BG         0.0f, 0.0f, 0.0f, 1.0f
 #define COLOR_BLACK_BARS 0.0f, 0.0f, 1.0f, 1.0f
 
-bool rt_create(RenderTarget *rt, int w, int h)
+bool rt_create(RenderTarget *rt, int win_w, int win_h, int w, int h)
 {
     rt->w = w;
     rt->h = h;
+    rt->scale = (int)fminf((float)win_w / rt->w, (float)win_h / rt->h);
 
     glGenTextures(1, &rt->color);
     glBindTexture(GL_TEXTURE_2D, rt->color);
@@ -44,46 +45,30 @@ void rt_begin(const RenderTarget *rt)
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-RTLayout rt_layout(const RenderTarget *rt, int win_w, int win_h)
+void rt_present(const RenderTarget *rt, int win_w, int win_h, const Camera *cam)
 {
-    const int lw = rt->w - 2 * RT_MARGIN;
-    const int lh = rt->h - 2 * RT_MARGIN;
-
-    RTLayout L;
-    
-    L.scale = SDL_max(1, SDL_min(win_w / lw, win_h / lh));
-
-    L.lr.w = lw * L.scale;
-    L.lr.h = lh * L.scale;
-    L.lr.x = (win_w - L.lr.w) / 2;
-    L.lr.y = (win_h - L.lr.h) / 2;
-
-    L.vr.w = rt->w * L.scale;
-    L.vr.h = rt->h * L.scale;
-    L.vr.x = L.lr.x - RT_MARGIN * L.scale;
-    L.vr.y = L.lr.y - RT_MARGIN * L.scale;
-    
-    return L;
-}
-
-void rt_present(const RenderTarget *rt, int win_w, int win_h, const RTLayout *L)
-{
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, win_w, win_h);
-    glDisable(GL_SCISSOR_TEST);
     glClearColor(COLOR_BLACK_BARS);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // Clip to the visible area so the margin texels and the shifted edges
-    // never leak into the black bars
-    glEnable(GL_SCISSOR_TEST);
-    glScissor(L->lr.x, L->lr.y, L->lr.w, L->lr.h);
+    int render_w = (int)(rt->w * rt->scale);
+    int render_h = (int)(rt->h * rt->scale);
+    int render_x = (win_w - render_w) / 2;
+    int render_y = (win_h - render_h) / 2;
 
-    glBlitFramebuffer(0, 0, rt->w, rt->h,
-                      L->vr.x, L->vr.y, L->vr.x + L->vr.w, L->vr.y + L->vr.h,
-                      GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-    glDisable(GL_SCISSOR_TEST);
+    int sub_x_scaled = (int)(cam->sub_x * rt->scale);
+    int sub_y_scaled = (int)(cam->sub_y * rt->scale);
+
+    glBlitFramebuffer(
+        0, 0, rt->w, rt->h,
+        render_x + sub_x_scaled, render_y + sub_y_scaled, render_x + render_w + sub_x_scaled, render_y + render_h + sub_y_scaled,
+        GL_COLOR_BUFFER_BIT, 
+        GL_NEAREST
+    );
+
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 }

@@ -9,8 +9,12 @@ void camera_init(Camera *cam)
 
 void camera_update(Camera *cam, float dt, float target_x, float target_y)
 {
-    cam->x = target_x - VIRT_W * 0.5f;
-    cam->y = target_y;
+    float tx = target_x - VIRT_W * 0.5f;
+    cam->sub_x = roundf(tx) - tx;
+    cam->sub_y = roundf(target_y) - target_y;
+    
+    cam->x = roundf(tx);
+    cam->y = roundf(target_y);
 }
 
 void camera_view(const Camera *cam, mat4 out)

@@ -63,6 +63,7 @@ static void render_debug_panel(AppContext *app)
     int vsync;
     window_get_vsync(&app->window, &vsync);
 
+    debug_line(app, 260.0f, "Upscale Factor: %d", app->rt.scale);
     debug_line(app, 220.0f, "VSync: %d", vsync);
     debug_line(app, 180.0f, "Anim Frame: %d", g_player.anim_frame);
     debug_line(app, 140.0f, "Grounded: %d", g_player.grounded);
@@ -146,7 +147,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     sprite_create(&g_spr_bg);
 
     renderer_init(&app->renderer);
-    if (!rt_create(&app->rt, VIRT_W + 2 * RT_MARGIN, VIRT_H + 2 * RT_MARGIN)) {
+
+    int w, h;
+    window_get_pixel_size(&app->window, &w, &h);
+    
+    if (!rt_create(&app->rt, w, h, VIRT_W, VIRT_H)) {
         SDL_Log("Failed to create render target!");
         return SDL_APP_FAILURE;
     }
@@ -224,8 +229,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     shader_bind(&app->shader_sprite);
     player_render(&g_player, &app->shader_sprite);
 
-    const RTLayout L = rt_layout(&app->rt, w, h);
-    rt_present(&app->rt, w, h, &L);
+    rt_present(&app->rt, w, h, &g_camera);
 
     if (app->debug_overlay) {
         renderer_use_screen(&app->renderer, w, h);
