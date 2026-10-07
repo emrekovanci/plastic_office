@@ -253,8 +253,8 @@ void player_update(Player *player, float dt, Input *input, float alpha, Tilemap 
         }
     }
 
-    player->render_xx = roundf(lerpf(player->prev_xx, player->xx, alpha));
-    player->render_yy = roundf(lerpf(player->prev_yy, player->yy, alpha));
+    player->render_xx = lerpf(player->prev_xx, player->xx, alpha);
+    player->render_yy = lerpf(player->prev_yy, player->yy, alpha);
 }
 
 void player_render(Player *player, Shader *shader)

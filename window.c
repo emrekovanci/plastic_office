@@ -105,7 +105,7 @@ bool window_init(Window *win, const WindowConfig *config)
     if (config->debugging)
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
-    SDL_WindowFlags window_flags = SDL_WINDOW_OPENGL;
+    SDL_WindowFlags window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY;
     if (config->fullscreen)
         window_flags |= SDL_WINDOW_FULLSCREEN;
 

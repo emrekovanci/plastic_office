@@ -16,7 +16,7 @@
 #define PLAYER_HITBOX_HALF_WIDTH  0.5f
 #define PLAYER_HITBOX_HEIGHT      2.0f
 
-#define PLAYER_MOVE_SPEED         0.5f
+#define PLAYER_MOVE_SPEED         0.25f
 #define PLAYER_RUN_SPEED          0.5f
 #define PLAYER_GRAVITY           -0.08f
 #define PLAYER_JUMP_FORCE         1.1f

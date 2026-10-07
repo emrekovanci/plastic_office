@@ -9,7 +9,7 @@ void camera_init(Camera *cam)
 
 void camera_update(Camera *cam, float dt, float target_x, float target_y)
 {
-    cam->x = roundf(target_x - VIRT_W * 0.5f);
+    cam->x = target_x - VIRT_W * 0.5f;
     cam->y = target_y;
 }
 
