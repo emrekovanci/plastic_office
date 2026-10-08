@@ -8,7 +8,7 @@
 #define COLOR_BG         0.0f, 0.0f, 0.0f, 1.0f
 #define COLOR_BLACK_BARS 0.0f, 0.0f, 1.0f, 1.0f
 
-bool rt_create(RenderTarget *rt, int win_w, int win_h, int w, int h)
+bool rt_create(RenderTarget *rt, int w, int h)
 {
     rt->w = w;
     rt->h = h;
@@ -44,7 +44,7 @@ void rt_begin(const RenderTarget *rt)
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void rt_present(const RenderTarget *rt, int win_w, int win_h, const Camera *cam)
+void rt_present(const RenderTarget *rt, int win_w, int win_h)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, win_w, win_h);
@@ -61,12 +61,9 @@ void rt_present(const RenderTarget *rt, int win_w, int win_h, const Camera *cam)
     glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-    int sub_x_scaled = (int)(cam->sub_x * scale);
-    int sub_y_scaled = (int)(cam->sub_y * scale);
-
     glBlitFramebuffer(
         0, 0, rt->w, rt->h,
-        render_x + sub_x_scaled, render_y + sub_y_scaled, render_x + render_w + sub_x_scaled, render_y + render_h + sub_y_scaled,
+        render_x, render_y, render_x + render_w, render_y + render_h,
         GL_COLOR_BUFFER_BIT, 
         GL_NEAREST
     );

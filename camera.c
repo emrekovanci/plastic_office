@@ -1,6 +1,5 @@
 #include "camera.h"
 #include "constants.h"
-#include "utils.h"
 
 void camera_init(Camera *cam)
 {        
@@ -9,12 +8,8 @@ void camera_init(Camera *cam)
 
 void camera_update(Camera *cam, float dt, float target_x, float target_y)
 {
-    float tx = target_x - VIRT_W * 0.5f;
-    cam->sub_x = roundf(tx) - tx;
-    cam->sub_y = roundf(target_y) - target_y;
-    
-    cam->x = roundf(tx);
-    cam->y = roundf(target_y);
+    cam->x = roundf(target_x - VIRT_W * 0.5f);
+    cam->y = target_y;
 }
 
 void camera_view(const Camera *cam, mat4 out)
@@ -25,5 +20,5 @@ void camera_view(const Camera *cam, mat4 out)
 
 void camera_proj(const Camera *cam, int width, int height, mat4 out)
 {
-    glm_ortho(0.0f, width, 0.0f, height, -1, 1, out);
+    glm_ortho(0.0f, (float)width, 0.0f, (float)height, -1, 1, out);
 }

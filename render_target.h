@@ -9,9 +9,9 @@ typedef struct RenderTarget {
     int w, h;
 } RenderTarget;
 
-bool rt_create(RenderTarget *rt, int win_w, int win_h, int w, int h);
+bool rt_create(RenderTarget *rt, int w, int h);
 void rt_destroy(RenderTarget *rt);
 void rt_begin(const RenderTarget *rt);
-void rt_present(const RenderTarget *rt, int win_w, int win_h, const Camera *cam);
+void rt_present(const RenderTarget *rt, int win_w, int win_h);
 
 #endif

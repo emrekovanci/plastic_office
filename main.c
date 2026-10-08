@@ -150,7 +150,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     int w, h;
     window_get_pixel_size(&app->window, &w, &h);
     
-    if (!rt_create(&app->rt, w, h, VIRT_W, VIRT_H)) {
+    if (!rt_create(&app->rt, VIRT_W, VIRT_H)) {
         SDL_Log("Failed to create render target!");
         return SDL_APP_FAILURE;
     }
@@ -228,7 +228,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     shader_bind(&app->shader_sprite);
     player_render(&g_player, &app->shader_sprite);
 
-    rt_present(&app->rt, w, h, &g_camera);
+    rt_present(&app->rt, w, h);
 
     if (app->debug_overlay) {
         renderer_use_screen(&app->renderer, w, h);
