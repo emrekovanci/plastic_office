@@ -10,13 +10,11 @@ bool texture_load(Texture *out, const char *path)
     stbi_set_flip_vertically_on_load(true);
 
     int width, height, channels;
-    unsigned char *data = stbi_load(path, &width, &height, &channels, 0);
+    unsigned char *data = stbi_load(path, &width, &height, &channels, 4);
     if (!data) {
         SDL_Log("Failed to load texture: '%s': %s -- using fallback texture", path, stbi_failure_reason());
         return texture_create_solid(out, MAGENTA);
     }
-
-    const GLenum format = (channels == 4) ? GL_RGBA : GL_RGB;
 
     unsigned int id;
     glGenTextures(1, &id);
@@ -25,7 +23,7 @@ bool texture_load(Texture *out, const char *path)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
     out->id = id;
     out->width = width;
@@ -50,7 +48,7 @@ bool texture_create_solid(Texture *out, Color color)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &color);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &color);
 
     out->id = id;
     out->width = 1;
