@@ -2,7 +2,6 @@
 #define RENDER_TARGET_H
 
 #include <stdbool.h>
-#include "camera.h"
 
 typedef struct RenderTarget {
     unsigned int fbo, color;

@@ -15,7 +15,7 @@ bool rt_create(RenderTarget *rt, int w, int h)
 
     glGenTextures(1, &rt->color);
     glBindTexture(GL_TEXTURE_2D, rt->color);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -52,6 +52,8 @@ void rt_present(const RenderTarget *rt, int win_w, int win_h)
     glClear(GL_COLOR_BUFFER_BIT);
 
     int scale = (int)fminf((float)win_w / rt->w, (float)win_h / rt->h);
+    if (scale < 1)
+        scale = 1;
 
     int render_w = (int)(rt->w * scale);
     int render_h = (int)(rt->h * scale);

@@ -1,20 +1,11 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+// ---------
+// rendering
+// ---------
 #define VIRT_W                   320
 #define VIRT_H                   180
-
-// ------
-// window
-// ------
-#define WINDOW_WIDTH             1280
-#define WINDOW_HEIGHT            800
-#define WINDOW_GL_MAJOR_VERSION  4
-#define WINDOW_GL_MINOR_VERSION  3
-
-// --------
-// renderer
-// --------
 #define UBO_BINDING_MATRICES     0
 
 // --

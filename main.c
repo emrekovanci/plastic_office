@@ -63,6 +63,11 @@ static void render_debug_panel(AppContext *app)
     int vsync;
     window_get_vsync(&app->window, &vsync);
 
+    int w, h;
+    window_get_pixel_size(&app->window, &w, &h);
+
+    debug_line(app, 300.0f, "Window Size: %d x %d", w, h);
+    debug_line(app, 260.0f, "UI Scale: %.2f", app->ui_scale);
     debug_line(app, 220.0f, "VSync: %d", vsync);
     debug_line(app, 180.0f, "Anim Frame: %d", g_player.anim_frame);
     debug_line(app, 140.0f, "Grounded: %d", g_player.grounded);
@@ -76,9 +81,16 @@ SDL_AppResult app_create(AppContext *app)
     app->ui_scale = 1.0f;
     app->debug_overlay = true;
 
+    SDL_DisplayID display = SDL_GetPrimaryDisplay();
+    const SDL_DisplayMode *mode = SDL_GetDesktopDisplayMode(display);
+    if (!mode) {
+        SDL_Log("Couldn't get display mode: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
+
     WindowConfig window_config = {
-        .width = WINDOW_WIDTH,
-        .height = WINDOW_HEIGHT,
+        .width = mode->w,
+        .height = mode->h,
         .fullscreen = true,
         .vsync = true,
         .debugging = true
@@ -149,7 +161,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     int w, h;
     window_get_pixel_size(&app->window, &w, &h);
-    
+
     if (!rt_create(&app->rt, VIRT_W, VIRT_H)) {
         SDL_Log("Failed to create render target!");
         return SDL_APP_FAILURE;
@@ -218,7 +230,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     // parallax_render(&app->shader_default, VIRT_W, VIRT_H, g_camera.x * 0.05f, &g_spr_bg, &g_tex_bg2);
     // parallax_render(&app->shader_default, VIRT_W, VIRT_H, g_camera.x * 0.3f,  &g_spr_bg, &g_tex_bg3);
     // parallax_render(&app->shader_default, VIRT_W, VIRT_H, g_camera.x * 0.3f,  &g_spr_bg, &g_tex_bg4);
-    
+
     rt_begin(&app->rt);
 
     renderer_use_world(&app->renderer, &g_camera, app->rt.w, app->rt.h);
