@@ -13,7 +13,6 @@
 #include "constants.h"
 #include "font.h"
 #include "renderer.h"
-#include "parallax.h"
 #include "timer.h"
 #include "render_target.h"
 
@@ -225,11 +224,6 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     int w, h;
     window_get_pixel_size(&app->window, &w, &h);
     app->ui_scale = (float)h / UI_REFERENCE_HEIGHT;
-
-    // parallax_render(&app->shader_default, VIRT_W, VIRT_H, 0.0f,               &g_spr_bg, &g_tex_bg1);
-    // parallax_render(&app->shader_default, VIRT_W, VIRT_H, g_camera.x * 0.05f, &g_spr_bg, &g_tex_bg2);
-    // parallax_render(&app->shader_default, VIRT_W, VIRT_H, g_camera.x * 0.3f,  &g_spr_bg, &g_tex_bg3);
-    // parallax_render(&app->shader_default, VIRT_W, VIRT_H, g_camera.x * 0.3f,  &g_spr_bg, &g_tex_bg4);
 
     rt_begin(&app->rt);
 
