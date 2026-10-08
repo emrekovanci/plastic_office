@@ -7,7 +7,6 @@
 typedef struct RenderTarget {
     unsigned int fbo, color;
     int w, h;
-    int scale;
 } RenderTarget;
 
 bool rt_create(RenderTarget *rt, int win_w, int win_h, int w, int h);

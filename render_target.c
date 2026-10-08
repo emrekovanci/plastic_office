@@ -12,7 +12,6 @@ bool rt_create(RenderTarget *rt, int win_w, int win_h, int w, int h)
 {
     rt->w = w;
     rt->h = h;
-    rt->scale = (int)fminf((float)win_w / rt->w, (float)win_h / rt->h);
 
     glGenTextures(1, &rt->color);
     glBindTexture(GL_TEXTURE_2D, rt->color);
@@ -52,16 +51,18 @@ void rt_present(const RenderTarget *rt, int win_w, int win_h, const Camera *cam)
     glClearColor(COLOR_BLACK_BARS);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    int render_w = (int)(rt->w * rt->scale);
-    int render_h = (int)(rt->h * rt->scale);
+    int scale = (int)fminf((float)win_w / rt->w, (float)win_h / rt->h);
+
+    int render_w = (int)(rt->w * scale);
+    int render_h = (int)(rt->h * scale);
     int render_x = (win_w - render_w) / 2;
     int render_y = (win_h - render_h) / 2;
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-    int sub_x_scaled = (int)(cam->sub_x * rt->scale);
-    int sub_y_scaled = (int)(cam->sub_y * rt->scale);
+    int sub_x_scaled = (int)(cam->sub_x * scale);
+    int sub_y_scaled = (int)(cam->sub_y * scale);
 
     glBlitFramebuffer(
         0, 0, rt->w, rt->h,

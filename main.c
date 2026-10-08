@@ -63,7 +63,6 @@ static void render_debug_panel(AppContext *app)
     int vsync;
     window_get_vsync(&app->window, &vsync);
 
-    debug_line(app, 260.0f, "Upscale Factor: %d", app->rt.scale);
     debug_line(app, 220.0f, "VSync: %d", vsync);
     debug_line(app, 180.0f, "Anim Frame: %d", g_player.anim_frame);
     debug_line(app, 140.0f, "Grounded: %d", g_player.grounded);
