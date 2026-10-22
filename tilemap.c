@@ -23,15 +23,6 @@ static void tile_uv(int rows, int cols, int tile_id, float *u0, float *v0, float
     const int col = tile_id % cols;
     const int row = (rows - 1) - (tile_id / cols);
 
-    // to fix "texture bleeding" problem
-    // this can be bad practice, idk we'll see...
-    // const float eps = 0.00005f;
-    //
-    // *u0 = (float)col / cols + eps;
-    // *v0 = (float)row / rows + eps;
-    // *u1 = (float)(col + 1.0f) / cols - eps;
-    // *v1 = (float)(row + 1.0f) / rows - eps;
-
     *u0 = (float)col / cols;
     *v0 = (float)row / rows;
     *u1 = (float)(col + 1.0f) / cols;

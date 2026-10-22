@@ -1,3 +1,11 @@
+### What We Have
+
+- Tilemap loading & rendering
+- Unicode text rendering
+- Collisions
+- Some unit tests
+- Upscaling from virtual resolution to native resolution
+
 ### TODOs
 
 - Shader uniform caching & hot reloading
