@@ -1,3 +1,11 @@
+### What We Have
+
+- Tilemap loading & rendering
+- Unicode text rendering
+- Collisions
+- Some unit tests
+- Upscaling from virtual resolution to native resolution
+
 ### TODOs
 
 - Shader uniform caching & hot reloading
@@ -18,7 +26,6 @@
 ### Issues
 
 - https://github.com/libsdl-org/SDL/issues/12791
-- https://gamedev.stackexchange.com/questions/49032/8-directional-movement-maintain-vertical-position
 
 ### Update & Sync Submodules
 

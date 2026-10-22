@@ -6,14 +6,14 @@ void timer_init(Timer *t, float fixed_timestep)
 {
     t->timescale = 1.0f;
     t->fixed_timestep = fixed_timestep;
-    t->last_tick = SDL_GetTicks();
+    t->last_tick = SDL_GetTicksNS();
     t->accumulator = 0.0;
 }
 
 float timer_tick(Timer *t)
 {
-    Uint64 now = SDL_GetTicks();
-    float dt = (float)(now - t->last_tick) / SDL_MS_PER_SECOND;
+    Uint64 now = SDL_GetTicksNS();
+    float dt = (float)(now - t->last_tick) / (double)SDL_NS_PER_SECOND;
     dt = SDL_min(dt, 0.25f);
     dt *= t->timescale;
     t->last_tick = now;

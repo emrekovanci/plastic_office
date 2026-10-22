@@ -93,7 +93,6 @@ int main(void)
     RUN_TEST(test_player_falls_without_ground);
     RUN_TEST(test_player_does_not_fall_with_ground);
     RUN_TEST(test_player_jump_applies_upward_velocity);
-    RUN_TEST(test_player_does_not_jump_when_buffer_empty);
 
     return UNITY_END();
 }

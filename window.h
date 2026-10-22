@@ -25,5 +25,6 @@ void window_swap(Window *win);
 
 void window_get_pixel_size(Window *win, int *w, int *h);
 void window_get_logical_size(Window *win, int *w, int *h);
+void window_get_vsync(Window *win, int *vsync);
 
 #endif

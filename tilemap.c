@@ -13,25 +13,15 @@ typedef struct TilemapLayerDef {
 } TilemapLayerDef;
 
 static const TilemapLayerDef LAYER_DEFS[MAP_LAYERS] = {
-    { "assets/side_Layer_1_Ground.csv",    "assets/Ground.png" },
-    { "assets/side_Layer_2_Buildings.csv", "assets/Buildings.png" },
-    { "assets/side_Layer_3_Decos.csv",     "assets/Decoration.png" },
-    { "assets/side_Layer_4_Collision.csv", "assets/Sprite_Collision.png" },
+    { "assets/level_01_01_Ground.csv",    "assets/GrassTiles.png" },
+    { "assets/level_01_02_Deco.csv",      "assets/Decor.png" },
+    { "assets/level_01_03_Collision.csv", "assets/DirtBackgroundTiles.png" },
 };
 
 static void tile_uv(int rows, int cols, int tile_id, float *u0, float *v0, float *u1, float *v1)
 {
     const int col = tile_id % cols;
     const int row = (rows - 1) - (tile_id / cols);
-
-    // to fix "texture bleeding" problem
-    // this can be bad practice, idk we'll see...
-    // const float eps = 0.00005f;
-    //
-    // *u0 = (float)col / cols + eps;
-    // *v0 = (float)row / rows + eps;
-    // *u1 = (float)(col + 1.0f) / cols - eps;
-    // *v1 = (float)(row + 1.0f) / rows - eps;
 
     *u0 = (float)col / cols;
     *v0 = (float)row / rows;
@@ -192,10 +182,7 @@ bool tilemap_init(Tilemap *out)
 
 void tilemap_render(Tilemap *tm, Shader *s)
 {
-    // TODO: no need to calculate every frame, tilemap doesnt move
     mat4 model = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(model, (vec3){ 0.0f, 0.0f, 0.0f });
-    glm_scale(model, (vec3){ (float)TILE_SCALE, (float)TILE_SCALE, 1.0f });
     shader_set_mat4(s, "model", (float*)model);
 
     for (int i = 0; i < MAP_LAYERS; ++i) {

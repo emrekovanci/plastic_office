@@ -30,19 +30,6 @@ void renderer_destroy(Renderer *renderer)
     glDeleteBuffers(1, &renderer->ubo);
 }
 
-void renderer_begin(Renderer *renderer, int width, int height)
-{
-    glViewport(0, 0, width, height);
-
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-}
-
-void renderer_end(Renderer *renderer)
-{
-
-}
-
 void renderer_toggle_wireframe(Renderer *renderer)
 {
     if (renderer->wireframe_enabled) {

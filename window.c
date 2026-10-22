@@ -95,17 +95,16 @@ bool window_init(Window *win, const WindowConfig *config)
 {
     *win = (Window){0};
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, WINDOW_GL_MAJOR_VERSION);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, WINDOW_GL_MINOR_VERSION);
+    // debug output is core since OpenGL version 4.3
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    // debug output is core since OpenGL version 4.3
-    // which means you'll find this functionality on any machine that runs OpenGL 4.3 or higher.
     if (config->debugging)
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
-    SDL_WindowFlags window_flags = SDL_WINDOW_OPENGL;
+    SDL_WindowFlags window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY;
     if (config->fullscreen)
         window_flags |= SDL_WINDOW_FULLSCREEN;
 
@@ -184,4 +183,12 @@ void window_get_pixel_size(Window *win, int *w, int *h)
 void window_get_logical_size(Window *win, int *w, int *h)
 {
     SDL_GetWindowSize(win->handle, w, h);
+}
+
+void window_get_vsync(Window *win, int *vsync)
+{
+    //  0 -> VSync off
+    //  1 -> VSync on
+    // -1 -> Adaptive VSync
+    SDL_GL_GetSwapInterval(vsync);
 }
