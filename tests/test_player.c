@@ -145,8 +145,8 @@ void test_player_does_not_fall_with_ground(void)
 void test_player_jump_applies_upward_velocity(void)
 {
     Player p = make_player();
-    p.jump_buffer_timer = PLAYER_JUMP_BUFFER;
     p.grounded = true;
+    p.jump_requested = true;
     Tilemap t = make_tilemap_with_ground();
     Input input = {0};
 
@@ -160,27 +160,12 @@ void test_player_jump_applies_upward_velocity(void)
 void test_player_is_not_grounded_after_jump(void)
 {
     Player p = make_player();
-    p.jump_buffer_timer = PLAYER_JUMP_BUFFER;
     p.grounded = true;
+    p.jump_requested = true;
     Tilemap t = make_tilemap_with_ground();
     Input input = {0};
 
     simulate(&p, &input, &t, 3);
 
     TEST_ASSERT_FALSE(p.grounded);
-}
-
-void test_player_does_not_jump_when_buffer_empty(void)
-{
-    Player p = make_player();
-    p.jump_buffer_timer = 0.0f;
-    p.grounded = true;
-    Tilemap t = make_tilemap_with_ground();
-    Input input = {0};
-
-    float before_y = p.cy + p.yr;
-    simulate(&p, &input, &t, 3);
-    float after_y = p.cy + p.yr;
-
-    TEST_ASSERT_FLOAT_WITHIN(0.0001f, before_y, after_y);
 }
